@@ -97,3 +97,22 @@ export type ValidationError = {
   msg: string
   type: string
 }
+
+export type ChatMessageCreate = {
+  message: string
+}
+
+export type ChatMessagePublic = {
+  message: string
+  id: string
+  owner_id: string
+}
+
+export type ChatMessageUpdate = {
+  message?: string | null
+}
+
+export type ChatMessagesPublic = {
+  data: Array<ChatMessagePublic>
+  count: number
+}

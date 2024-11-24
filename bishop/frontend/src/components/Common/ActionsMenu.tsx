@@ -9,19 +9,22 @@ import {
 import { BsThreeDotsVertical } from "react-icons/bs"
 import { FiEdit, FiTrash } from "react-icons/fi"
 
-import type { ItemPublic, UserPublic } from "../../client"
+import type { ChatMessagePublic, ItemPublic, UserPublic } from "../../client"
 import EditUser from "../Admin/EditUser"
 import EditItem from "../Items/EditItem"
+import EditChatMessage from "../ChatMessages/EditChatMessage"
 import Delete from "./DeleteAlert"
 
 interface ActionsMenuProps {
   type: string
-  value: ItemPublic | UserPublic
+  value: ItemPublic | UserPublic | ChatMessagePublic
   disabled?: boolean
 }
 
 const ActionsMenu = ({ type, value, disabled }: ActionsMenuProps) => {
   const editUserModal = useDisclosure()
+  const editItemModal = useDisclosure()
+  const editChatMessageModal = useDisclosure()
   const deleteModal = useDisclosure()
 
   return (
@@ -35,7 +38,15 @@ const ActionsMenu = ({ type, value, disabled }: ActionsMenuProps) => {
         />
         <MenuList>
           <MenuItem
-            onClick={editUserModal.onOpen}
+            onClick={() => {
+              if (type === "User") {
+                editUserModal.onOpen()
+              } else if (type === "Item") {
+                editItemModal.onOpen()
+              } else if (type === "ChatMessage") {
+                editChatMessageModal.onOpen()
+              }
+            }}
             icon={<FiEdit fontSize="16px" />}
           >
             Edit {type}
@@ -54,11 +65,17 @@ const ActionsMenu = ({ type, value, disabled }: ActionsMenuProps) => {
             isOpen={editUserModal.isOpen}
             onClose={editUserModal.onClose}
           />
-        ) : (
+        ) : type === "Item" ? (
           <EditItem
             item={value as ItemPublic}
-            isOpen={editUserModal.isOpen}
-            onClose={editUserModal.onClose}
+            isOpen={editItemModal.isOpen}
+            onClose={editItemModal.onClose}
+          />
+        ) : (
+          <EditChatMessage
+            chatMessage={value as ChatMessagePublic}
+            isOpen={editChatMessageModal.isOpen}
+            onClose={editChatMessageModal.onClose}
           />
         )}
         <Delete

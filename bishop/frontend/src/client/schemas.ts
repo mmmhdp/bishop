@@ -442,3 +442,66 @@ export const $ValidationError = {
     },
   },
 } as const
+
+export const $ChatMessageCreate = {
+  properties: {
+    message: {
+      type: "string",
+      isRequired: true,
+      minLength: 1,
+    },
+  },
+} as const
+
+export const $ChatMessagePublic = {
+  properties: {
+    message: {
+      type: "string",
+      isRequired: true,
+      minLength: 1,
+    },
+    id: {
+      type: "string",
+      isRequired: true,
+      format: "uuid",
+    },
+    owner_id: {
+      type: "string",
+      isRequired: true,
+      format: "uuid",
+    },
+  },
+} as const
+
+export const $ChatMessageUpdate = {
+  properties: {
+    message: {
+      type: "any-of",
+      contains: [
+        {
+          type: "string",
+          minLength: 1,
+        },
+        {
+          type: "null",
+        },
+      ],
+    },
+  },
+} as const
+
+export const $ChatMessagesPublic = {
+  properties: {
+    data: {
+      type: "array",
+      contains: {
+        type: "ChatMessagePublic",
+      },
+      isRequired: true,
+    },
+    count: {
+      type: "number",
+      isRequired: true,
+    },
+  },
+} as const
