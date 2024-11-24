@@ -1,3 +1,4 @@
+import logging
 import uuid
 from typing import Any
 
@@ -61,6 +62,7 @@ def create_item(
     """
     Create new item.
     """
+    logging.info(f"Creating item: {item_in}")
     item = Item.model_validate(item_in, update={"owner_id": current_user.id})
     session.add(item)
     session.commit()

@@ -1,3 +1,4 @@
+import logging
 import uuid
 from typing import Any
 
@@ -15,14 +16,14 @@ def read_messages(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """
-    Retrieve items.
+    Retrieve messages.
     """
 
     if current_user.is_superuser:
         count_statement = select(func.count()).select_from(ChatMessage)
         count = session.exec(count_statement).one()
         statement = select(ChatMessage).offset(skip).limit(limit)
-        items = session.exec(statement).all()
+        messages = session.exec(statement).all()
     else:
         count_statement = (
             select(func.count())
@@ -36,41 +37,41 @@ def read_messages(
             .offset(skip)
             .limit(limit)
         )
-        items = session.exec(statement).all()
+        messages = session.exec(statement).all()
 
-    return ChatMessagesPublic(data=items, count=count)
+    return ChatMessagesPublic(data=messages, count=count)
 
 
 @router.get("/{id}", response_model=ChatMessagePublic)
-def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
+def read_message(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
     """
-    Get item by ID.
+    Get message by ID.
     """
-    item = session.get(ChatMessage, id)
-    if not item:
+    message = session.get(ChatMessage, id)
+    if not message:
         raise HTTPException(status_code=404, detail="ChatMessage not found")
-    if not current_user.is_superuser and (item.owner_id != current_user.id):
+    if not current_user.is_superuser and (message.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    return item
+    return message
 
 
 @router.post("/", response_model=ChatMessagePublic)
-def create_item(
+def create_message(
     *, session: SessionDep, current_user: CurrentUser, item_in: ChatMessageCreate
 ) -> Any:
     """
-    Create new item.
+    Create new message.
     """
-    item = ChatMessage.model_validate(
+    message = ChatMessage.model_validate(
         item_in, update={"owner_id": current_user.id})
-    session.add(item)
+    session.add(message)
     session.commit()
-    session.refresh(item)
-    return item
+    session.refresh(message)
+    return message
 
 
 @router.put("/{id}", response_model=ChatMessagePublic)
-def update_item(
+def update_message(
     *,
     session: SessionDep,
     current_user: CurrentUser,
@@ -78,33 +79,33 @@ def update_item(
     item_in: ChatMessageUpdate,
 ) -> Any:
     """
-    Update an item.
+    Update an message.
     """
-    item = session.get(ChatMessage, id)
-    if not item:
+    message = session.get(ChatMessage, id)
+    if not message:
         raise HTTPException(status_code=404, detail="ChatMessage not found")
-    if not current_user.is_superuser and (item.owner_id != current_user.id):
+    if not current_user.is_superuser and (message.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
     update_dict = item_in.model_dump(exclude_unset=True)
-    item.sqlmodel_update(update_dict)
-    session.add(item)
+    message.sqlmodel_update(update_dict)
+    session.add(message)
     session.commit()
-    session.refresh(item)
-    return item
+    session.refresh(message)
+    return message
 
 
 @router.delete("/{id}")
-def delete_item(
+def delete_message(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
 ) -> Message:
     """
-    Delete an item.
+    Delete an message.
     """
-    item = session.get(ChatMessage, id)
-    if not item:
+    message = session.get(ChatMessage, id)
+    if not message:
         raise HTTPException(status_code=404, detail="ChatMessage not found")
-    if not current_user.is_superuser and (item.owner_id != current_user.id):
+    if not current_user.is_superuser and (message.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    session.delete(item)
+    session.delete(message)
     session.commit()
     return Message(message="ChatMessage deleted successfully")

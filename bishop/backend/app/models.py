@@ -105,9 +105,7 @@ class ItemsPublic(SQLModel):
 
 # Shared properties
 class ChatMessageBase (SQLModel):
-    #     title: str = Field(min_length=1, max_length=255)
-    #     description: str | None = Field(default=None, max_length=255)
-    text: str | None = Field(default=None, sa_column=Column(Text))
+    message: str | None = Field(default=None, sa_column=Column(Text))
 
 # Properties to receive on item creation
 
@@ -115,20 +113,18 @@ class ChatMessageBase (SQLModel):
 class ChatMessageCreate (ChatMessageBase):
     pass
 
-
 # Properties to receive on item update
+
+
 class ChatMessageUpdate (ChatMessageBase):
-    #    title: str | None = Field(
-    #        default=None, min_length=1, max_length=255)  # type: ignore
-    text: str | None = Field(default=None, sa_column=Column(Text))
+    message: str | None = Field(default=None, sa_column=Column(Text))
 
 
 # Database model, database table inferred from class name
 class ChatMessage (ChatMessageBase, table=True):
     __tablename__ = "chat_message"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-#    title: str = Field(max_length=255)
-    text: str | None = Field(default=None, sa_column=Column(Text))
+    message: str | None = Field(default=None, sa_column=Column(Text))
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
