@@ -6,14 +6,23 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import ChatMessage, ChatMessageCreate, ChatMessagePublic, ChatMessagesPublic, ChatMessageUpdate, Message
+from app.models import (
+    ChatMessage,
+    ChatMessageCreate,
+    ChatMessagePublic,
+    ChatMessagesPublic,
+    ChatMessageUpdate,
+    Message
+)
 
 router = APIRouter()
 
 
 @router.get("/", response_model=ChatMessagesPublic)
 def read_messages(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0, limit: int = 100
 ) -> Any:
     """
     Retrieve messages.
@@ -57,7 +66,10 @@ def read_message(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) 
 
 @router.post("/", response_model=ChatMessagePublic)
 def create_message(
-    *, session: SessionDep, current_user: CurrentUser, item_in: ChatMessageCreate
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    item_in: ChatMessageCreate
 ) -> Any:
     """
     Create new message.

@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models import (
     Item,
+    ChatMessage,
     Message,
     UpdatePassword,
     User,
@@ -84,7 +85,8 @@ def update_user_me(
     """
 
     if user_in.email:
-        existing_user = crud.get_user_by_email(session=session, email=user_in.email)
+        existing_user = crud.get_user_by_email(
+            session=session, email=user_in.email)
         if existing_user and existing_user.id != current_user.id:
             raise HTTPException(
                 status_code=409, detail="User with this email already exists"
@@ -134,8 +136,13 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
         raise HTTPException(
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
-    statement = delete(Item).where(col(Item.owner_id) == current_user.id)
-    session.exec(statement)  # type: ignore
+    statement_items = delete(Item).where(col(Item.owner_id) == current_user.id)
+    session.exec(statement_items)  # type: ignore
+
+    statement_messages = delete(ChatMessage).where(
+        col(ChatMessage.owner_id) == current_user.id)
+    session.exec(statement_messages)  # type: ignore
+
     session.delete(current_user)
     session.commit()
     return Message(message="User deleted successfully")
@@ -197,13 +204,15 @@ def update_user(
             detail="The user with this id does not exist in the system",
         )
     if user_in.email:
-        existing_user = crud.get_user_by_email(session=session, email=user_in.email)
+        existing_user = crud.get_user_by_email(
+            session=session, email=user_in.email)
         if existing_user and existing_user.id != user_id:
             raise HTTPException(
                 status_code=409, detail="User with this email already exists"
             )
 
-    db_user = crud.update_user(session=session, db_user=db_user, user_in=user_in)
+    db_user = crud.update_user(
+        session=session, db_user=db_user, user_in=user_in)
     return db_user
 
 
@@ -223,6 +232,11 @@ def delete_user(
         )
     statement = delete(Item).where(col(Item.owner_id) == user_id)
     session.exec(statement)  # type: ignore
+
+    statement_messages = delete(ChatMessage).where(
+        col(ChatMessage.owner_id) == current_user.id)
+    session.exec(statement_messages)  # type: ignore
+
     session.delete(user)
     session.commit()
     return Message(message="User deleted successfully")
