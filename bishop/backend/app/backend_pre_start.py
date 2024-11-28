@@ -30,11 +30,10 @@ async def init(db_engine: AsyncEngine) -> None:
 
 
 async def main() -> None:
-    logger.info("Initializing service boba biba")
+    logger.info("Initializing service")
     await init(async_engine)
     logger.info("Service finished initializing")
 
 
 if __name__ == "__main__":
-    logger.info("right before boba biba")
     asyncio.run(main())
