@@ -19,6 +19,7 @@ import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutItemsImport } from './routes/_layout/items'
+import { Route as LayoutChatWindowImport } from './routes/_layout/chatWindow'
 import { Route as LayoutChatMessagesImport } from './routes/_layout/chatMessages'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
 
@@ -64,6 +65,11 @@ const LayoutItemsRoute = LayoutItemsImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutChatWindowRoute = LayoutChatWindowImport.update({
+  path: '/chatWindow',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
 const LayoutChatMessagesRoute = LayoutChatMessagesImport.update({
   path: '/chatMessages',
   getParentRoute: () => LayoutRoute,
@@ -106,6 +112,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutChatMessagesImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/chatWindow': {
+      preLoaderRoute: typeof LayoutChatWindowImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/items': {
       preLoaderRoute: typeof LayoutItemsImport
       parentRoute: typeof LayoutImport
@@ -127,6 +137,7 @@ export const routeTree = rootRoute.addChildren([
   LayoutRoute.addChildren([
     LayoutAdminRoute,
     LayoutChatMessagesRoute,
+    LayoutChatWindowRoute,
     LayoutItemsRoute,
     LayoutSettingsRoute,
     LayoutIndexRoute,
