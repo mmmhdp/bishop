@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 @router.get("/", response_model=ChatMessagesPublic)
-def read_messages(
+async def read_messages(
     session: SessionDep,
     current_user: CurrentUser,
     skip: int = 0, limit: int = 100
@@ -30,33 +30,35 @@ def read_messages(
 
     if current_user.is_superuser:
         count_statement = select(func.count()).select_from(ChatMessage)
-        count = session.exec(count_statement).one()
-        statement = select(ChatMessage).offset(skip).limit(limit)
-        messages = session.exec(statement).all()
+        messages_statement = select(ChatMessage).offset(skip).limit(limit)
     else:
         count_statement = (
             select(func.count())
             .select_from(ChatMessage)
             .where(ChatMessage.owner_id == current_user.id)
         )
-        count = session.exec(count_statement).one()
-        statement = (
+        messages_statement = (
             select(ChatMessage)
             .where(ChatMessage.owner_id == current_user.id)
             .offset(skip)
             .limit(limit)
         )
-        messages = session.exec(statement).all()
+
+    count_result = await session.exec(count_statement)
+    count = count_result.one()
+
+    messages_result = await session.exec(messages_statement)
+    messages = messages_result.all()
 
     return ChatMessagesPublic(data=messages, count=count)
 
 
 @router.get("/{id}", response_model=ChatMessagePublic)
-def read_message(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
+async def read_message(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
     """
     Get message by ID.
     """
-    message = session.get(ChatMessage, id)
+    message = await session.get(ChatMessage, id)
     if not message:
         raise HTTPException(status_code=404, detail="ChatMessage not found")
     if not current_user.is_superuser and (message.owner_id != current_user.id):
@@ -65,7 +67,7 @@ def read_message(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) 
 
 
 @router.post("/", response_model=ChatMessagePublic)
-def create_message(
+async def create_message(
     *,
     session: SessionDep,
     current_user: CurrentUser,
@@ -77,13 +79,13 @@ def create_message(
     message = ChatMessage.model_validate(
         item_in, update={"owner_id": current_user.id})
     session.add(message)
-    session.commit()
-    session.refresh(message)
+    await session.commit()
+    await session.refresh(message)
     return message
 
 
 @router.put("/{id}", response_model=ChatMessagePublic)
-def update_message(
+async def update_message(
     *,
     session: SessionDep,
     current_user: CurrentUser,
@@ -93,7 +95,7 @@ def update_message(
     """
     Update an message.
     """
-    message = session.get(ChatMessage, id)
+    message = await session.get(ChatMessage, id)
     if not message:
         raise HTTPException(status_code=404, detail="ChatMessage not found")
     if not current_user.is_superuser and (message.owner_id != current_user.id):
@@ -101,23 +103,23 @@ def update_message(
     update_dict = item_in.model_dump(exclude_unset=True)
     message.sqlmodel_update(update_dict)
     session.add(message)
-    session.commit()
-    session.refresh(message)
+    await session.commit()
+    await session.refresh(message)
     return message
 
 
 @router.delete("/{id}")
-def delete_message(
+async def delete_message(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
 ) -> Message:
     """
     Delete an message.
     """
-    message = session.get(ChatMessage, id)
+    message = await session.get(ChatMessage, id)
     if not message:
         raise HTTPException(status_code=404, detail="ChatMessage not found")
     if not current_user.is_superuser and (message.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    session.delete(message)
-    session.commit()
+    await session.delete(message)
+    await session.commit()
     return Message(message="ChatMessage deleted successfully")
