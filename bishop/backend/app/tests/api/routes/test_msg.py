@@ -53,18 +53,18 @@ def test_read_chat_message_not_found(
     assert content["detail"] == "ChatMessage not found"
 
 
-# @pytest.mark.asyncio
-# async def test_read_chat_message_not_enough_permissions(
-#     client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
-# ) -> None:
-#     chat_message = await create_random_chat_message(db)
-#     response = client.get(
-#         f"{settings.API_V1_STR}/msgs/{chat_message.id}",
-#         headers=normal_user_token_headers,
-#     )
-#     assert response.status_code == 400
-#     content = response.json()
-#     assert content["detail"] == "Not enough permissions"
+@pytest.mark.asyncio
+async def test_read_chat_message_not_enough_permissions(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
+) -> None:
+    chat_message = await create_random_chat_message(db)
+    response = client.get(
+        f"{settings.API_V1_STR}/msgs/{chat_message.id}",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Not enough permissions"
 
 
 @pytest.mark.asyncio
@@ -114,20 +114,20 @@ def test_update_chat_message_not_found(
     assert content["detail"] == "ChatMessage not found"
 
 
-# @pytest.mark.asyncio
-# async def test_update_chat_message_not_enough_permissions(
-#     client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
-# ) -> None:
-#     chat_message = await create_random_chat_message(db)
-#     data = {"message": "Updated message"}
-#     response = client.put(
-#         f"{settings.API_V1_STR}/msgs/{chat_message.id}",
-#         headers=normal_user_token_headers,
-#         json=data,
-#     )
-#     assert response.status_code == 400
-#     content = response.json()
-#     assert content["detail"] == "Not enough permissions"
+@pytest.mark.asyncio
+async def test_update_chat_message_not_enough_permissions(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
+) -> None:
+    chat_message = await create_random_chat_message(db)
+    data = {"message": "Updated message"}
+    response = client.put(
+        f"{settings.API_V1_STR}/msgs/{chat_message.id}",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Not enough permissions"
 
 
 @pytest.mark.asyncio
@@ -156,15 +156,15 @@ def test_delete_chat_message_not_found(
     assert content["detail"] == "ChatMessage not found"
 
 
-# @pytest.mark.asyncio
-# async def test_delete_chat_message_not_enough_permissions(
-#     client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
-# ) -> None:
-#     chat_message = await create_random_chat_message(db)
-#     response = client.delete(
-#         f"{settings.API_V1_STR}/msgs/{chat_message.id}",
-#         headers=normal_user_token_headers,
-#     )
-#     assert response.status_code == 400
-#     content = response.json()
-#     assert content["detail"] == "Not enough permissions"
+@pytest.mark.asyncio
+async def test_delete_chat_message_not_enough_permissions(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
+) -> None:
+    chat_message = await create_random_chat_message(db)
+    response = client.delete(
+        f"{settings.API_V1_STR}/msgs/{chat_message.id}",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Not enough permissions"
