@@ -15,7 +15,6 @@ async def create_random_chat_message(db: AsyncSession) -> ChatMessage:
     chat_message = await crud.create_chat_message(
         session=db,
         item_in=item_in,
-        is_generated_by_llm=False,
         owner_id=owner_id
     )
     return chat_message
