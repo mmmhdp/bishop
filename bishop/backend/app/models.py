@@ -1,7 +1,7 @@
 import uuid
 
 from pydantic import EmailStr
-from sqlmodel import Field, Relationship, SQLModel, Column
+from sqlmodel import Field, Relationship, SQLModel, Column, Boolean
 from sqlalchemy.types import Text
 
 
@@ -100,27 +100,20 @@ class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
 
-# Chat messages
 
-
-# Shared properties
 class ChatMessageBase (SQLModel):
     message: str | None = Field(default=None, sa_column=Column(Text))
-
-# Properties to receive on item creation
+# Shared properties
 
 
 class ChatMessageCreate (ChatMessageBase):
     pass
-
-# Properties to receive on item update
 
 
 class ChatMessageUpdate (ChatMessageBase):
     message: str | None = Field(default=None, sa_column=Column(Text))
 
 
-# Database model, database table inferred from class name
 class ChatMessage (ChatMessageBase, table=True):
     __tablename__ = "chat_message"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -131,7 +124,6 @@ class ChatMessage (ChatMessageBase, table=True):
     owner: User | None = Relationship(back_populates="chat_messages")
 
 
-# Properties to return via API, id is always required
 class ChatMessagePublic (ChatMessageBase):
     id: uuid.UUID
     owner_id: uuid.UUID
@@ -142,18 +134,50 @@ class ChatMessagesPublic (SQLModel):
     count: int
 
 
-# Generic message
+class LLModelResponseBase (SQLModel):
+    response: str | None = Field(default=None, sa_column=Column(Text))
+    answer_to_msg_with_id: uuid.UUID | None = Field(default=None)
+
+
+class LLModelResponseCreate (LLModelResponseBase):
+    pass
+
+
+class LLModelResponseUpdate (LLModelResponseBase):
+    response: str | None = Field(default=None, sa_column=Column(Text))
+
+
+class LLModelResponse (LLModelResponseBase, table=True):
+    __tablename__ = "llmodel_chat_response"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    response: str | None = Field(default=None, sa_column=Column(Text))
+    answer_to_msg_with_id: uuid.UUID = Field(default=None)
+
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="llmodel_chat_responses")
+
+
+class LLModelResponsePublic (LLModelResponseBase):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+
+
+class LLModelResponsesPublic (SQLModel):
+    data: list[LLModelResponsePublic]
+    count: int
+
+
 class Message(SQLModel):
     message: str
 
 
-# JSON payload containing access token
 class Token(SQLModel):
     access_token: str
     token_type: str = "bearer"
 
 
-# Contents of JWT token
 class TokenPayload(SQLModel):
     sub: str | None = None
 
