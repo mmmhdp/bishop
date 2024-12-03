@@ -25,15 +25,16 @@ def test_get_users_superuser_me(
     assert current_user["email"] == settings.FIRST_SUPERUSER
 
 
-# def test_get_users_normal_user_me(
-#     client: TestClient, normal_user_token_headers: dict[str, str]
-# ) -> None:
-#     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
-#     current_user = r.json()
-#     assert current_user
-#     assert current_user["is_active"] is True
-#     assert current_user["is_superuser"] is False
-#     assert current_user["email"] == settings.EMAIL_TEST_USER
+@pytest.mark.asyncio
+def test_get_users_normal_user_me(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()
+    assert current_user
+    assert current_user["is_active"] is True
+    assert current_user["is_superuser"] is False
+    assert current_user["email"] == settings.EMAIL_TEST_USER
 
 
 @pytest.mark.asyncio
@@ -108,15 +109,16 @@ async def test_get_existing_user_current_user(client: TestClient, db: AsyncSessi
     assert existing_user.email == api_user["email"]
 
 
-# def test_get_existing_user_permissions_error(
-#     client: TestClient, normal_user_token_headers: dict[str, str]
-# ) -> None:
-#     r = client.get(
-#         f"{settings.API_V1_STR}/users/{uuid.uuid4()}",
-#         headers=normal_user_token_headers,
-#     )
-#     assert r.status_code == 403
-#     assert r.json() == {"detail": "The user doesn't have enough privileges"}
+@pytest.mark.asyncio
+def test_get_existing_user_permissions_error(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    r = client.get(
+        f"{settings.API_V1_STR}/users/{uuid.uuid4()}",
+        headers=normal_user_token_headers,
+    )
+    assert r.status_code == 403
+    assert r.json() == {"detail": "The user doesn't have enough privileges"}
 
 
 @pytest.mark.asyncio
@@ -139,18 +141,19 @@ async def test_create_user_existing_username(
     assert "_id" not in created_user
 
 
-# def test_create_user_by_normal_user(
-#     client: TestClient, normal_user_token_headers: dict[str, str]
-# ) -> None:
-#     username = random_email()
-#     password = random_lower_string()
-#     data = {"email": username, "password": password}
-#     r = client.post(
-#         f"{settings.API_V1_STR}/users/",
-#         headers=normal_user_token_headers,
-#         json=data,
-#     )
-#     assert r.status_code == 403
+@pytest.mark.asyncio
+def test_create_user_by_normal_user(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    username = random_email()
+    password = random_lower_string()
+    data = {"email": username, "password": password}
+    r = client.post(
+        f"{settings.API_V1_STR}/users/",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert r.status_code == 403
 
 
 @pytest.mark.asyncio
@@ -176,28 +179,29 @@ async def test_retrieve_users(
         assert "email" in item
 
 
-# @pytest.mark.asyncio
-# async def test_update_user_me(
-#     client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
-# ) -> None:
-#     full_name = "Updated Name"
-#     email = random_email()
-#     data = {"full_name": full_name, "email": email}
-#     r = client.patch(
-#         f"{settings.API_V1_STR}/users/me",
-#         headers=normal_user_token_headers,
-#         json=data,
-#     )
-#     assert r.status_code == 200
-#     updated_user = r.json()
-#     assert updated_user["email"] == email
-#     assert updated_user["full_name"] == full_name
+@pytest.mark.asyncio
+async def test_update_user_me(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
+) -> None:
+    full_name = "Updated Name"
+    email = random_email()
+    data = {"full_name": full_name, "email": email}
+    r = client.patch(
+        f"{settings.API_V1_STR}/users/me",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert r.status_code == 200
+    updated_user = r.json()
+    assert updated_user["email"] == email
+    assert updated_user["full_name"] == full_name
 
-#     user_query = select(User).where(User.email == email)
-#     user_db = await db.exec(user_query).first()
-#     assert user_db
-#     assert user_db.email == email
-#     assert user_db.full_name == full_name
+    user_query = select(User).where(User.email == email)
+    user_db_result = await db.exec(user_query)
+    user_db = user_db_result.first()
+    assert user_db
+    assert user_db.email == email
+    assert user_db.full_name == full_name
 
 
 @pytest.mark.asyncio
@@ -256,23 +260,23 @@ def test_update_password_me_incorrect_password(
     assert updated_user["detail"] == "Incorrect password"
 
 
-# @pytest.mark.asyncio
-# async def test_update_user_me_email_exists(
-#     client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
-# ) -> None:
-#     username = random_email()
-#     password = random_lower_string()
-#     user_in = UserCreate(email=username, password=password)
-#     user = await crud.create_user(session=db, user_create=user_in)
+@pytest.mark.asyncio
+async def test_update_user_me_email_exists(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
+) -> None:
+    username = random_email()
+    password = random_lower_string()
+    user_in = UserCreate(email=username, password=password)
+    user = await crud.create_user(session=db, user_create=user_in)
 
-#     data = {"email": user.email}
-#     r = client.patch(
-#         f"{settings.API_V1_STR}/users/me",
-#         headers=normal_user_token_headers,
-#         json=data,
-#     )
-#     assert r.status_code == 409
-#     assert r.json()["detail"] == "User with this email already exists"
+    data = {"email": user.email}
+    r = client.patch(
+        f"{settings.API_V1_STR}/users/me",
+        headers=normal_user_token_headers,
+        json=data,
+    )
+    assert r.status_code == 409
+    assert r.json()["detail"] == "User with this email already exists"
 
 
 def test_update_password_me_same_password_error(
@@ -494,18 +498,18 @@ async def test_delete_user_current_super_user_error(
     assert r.json()["detail"] == "Super users are not allowed to delete themselves"
 
 
-# @pytest.mark.asyncio
-# async def test_delete_user_without_privileges(
-#     client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
-# ) -> None:
-#     username = random_email()
-#     password = random_lower_string()
-#     user_in = UserCreate(email=username, password=password)
-#     user = await crud.create_user(session=db, user_create=user_in)
+@pytest.mark.asyncio
+async def test_delete_user_without_privileges(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
+) -> None:
+    username = random_email()
+    password = random_lower_string()
+    user_in = UserCreate(email=username, password=password)
+    user = await crud.create_user(session=db, user_create=user_in)
 
-#     r = client.delete(
-#         f"{settings.API_V1_STR}/users/{user.id}",
-#         headers=normal_user_token_headers,
-#     )
-#     assert r.status_code == 403
-#     assert r.json()["detail"] == "The user doesn't have enough privileges"
+    r = client.delete(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=normal_user_token_headers,
+    )
+    assert r.status_code == 403
+    assert r.json()["detail"] == "The user doesn't have enough privileges"
