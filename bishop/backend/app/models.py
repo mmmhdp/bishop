@@ -5,7 +5,6 @@ from sqlmodel import Field, Relationship, SQLModel, Column, Boolean
 from sqlalchemy.types import Text
 
 
-# Shared properties
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
     is_active: bool = True
@@ -13,7 +12,6 @@ class UserBase(SQLModel):
     full_name: str | None = Field(default=None, max_length=255)
 
 
-# Properties to receive via API on creation
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=40)
 
@@ -24,7 +22,6 @@ class UserRegister(SQLModel):
     full_name: str | None = Field(default=None, max_length=255)
 
 
-# Properties to receive via API on update, all are optional
 class UserUpdate(UserBase):
     email: EmailStr | None = Field(
         default=None, max_length=255)  # type: ignore
@@ -41,7 +38,6 @@ class UpdatePassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=40)
 
 
-# Database model, database table inferred from class name
 class User(UserBase, table=True):
     __tablename__ = "user"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -50,9 +46,10 @@ class User(UserBase, table=True):
         back_populates="owner", cascade_delete=True)
     chat_messages: list["ChatMessage"] = Relationship(
         back_populates="owner", cascade_delete=True)
+    llmodel_responses: list["LLModelResponse"] = Relationship(
+        back_populates="owner", cascade_delete=True)
 
 
-# Properties to return via API, id is always required
 class UserPublic(UserBase):
     id: uuid.UUID
 
@@ -62,24 +59,20 @@ class UsersPublic(SQLModel):
     count: int
 
 
-# Shared properties
 class ItemBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
 
 
-# Properties to receive on item creation
 class ItemCreate(ItemBase):
     pass
 
 
-# Properties to receive on item update
 class ItemUpdate(ItemBase):
     title: str | None = Field(
         default=None, min_length=1, max_length=255)  # type: ignore
 
 
-# Database model, database table inferred from class name
 class Item(ItemBase, table=True):
     __tablename__ = "item"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -90,7 +83,6 @@ class Item(ItemBase, table=True):
     owner: User | None = Relationship(back_populates="items")
 
 
-# Properties to return via API, id is always required
 class ItemPublic(ItemBase):
     id: uuid.UUID
     owner_id: uuid.UUID
@@ -103,7 +95,6 @@ class ItemsPublic(SQLModel):
 
 class ChatMessageBase (SQLModel):
     message: str | None = Field(default=None, sa_column=Column(Text))
-# Shared properties
 
 
 class ChatMessageCreate (ChatMessageBase):
@@ -148,15 +139,18 @@ class LLModelResponseUpdate (LLModelResponseBase):
 
 
 class LLModelResponse (LLModelResponseBase, table=True):
-    __tablename__ = "llmodel_chat_response"
+    __tablename__ = "llmodel_response"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     response: str | None = Field(default=None, sa_column=Column(Text))
-    answer_to_msg_with_id: uuid.UUID = Field(default=None)
+    answer_to_msg_with_id: uuid.UUID = Field(
+        foreign_key="chat_message.id",
+        default=None
+    )
 
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    owner: User | None = Relationship(back_populates="llmodel_chat_responses")
+    owner: User | None = Relationship(back_populates="llmodel_responses")
 
 
 class LLModelResponsePublic (LLModelResponseBase):
