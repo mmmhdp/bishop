@@ -19,11 +19,14 @@ async def db():
     async with AsyncSession(async_engine) as async_session:
         await init_db(async_session)
         yield async_session
-        statement = delete(Item)
-        await async_session.exec(statement)
         statement = delete(User)
         await async_session.exec(statement)
         await async_session.commit()
+
+        # For testing purposes, we want to clean up the database after the tests are done.
+        # But we don't want to delete superuser
+
+        await init_db(async_session)
 
 
 @pytest.fixture(scope="module")
