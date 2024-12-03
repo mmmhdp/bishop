@@ -11,7 +11,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core import security
 from app.core.config import settings
 from app.core.db import async_engine
-from app.models import TokenPayload, User
+from app.models.Security import TokenPayload
+from app.models.User import User
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"

@@ -8,7 +8,7 @@ import pytest_asyncio
 
 from app.core.config import settings
 from app.core.security import verify_password
-from app.models import User
+from app.models.User import User
 from app.utils import generate_password_reset_token
 
 
@@ -17,7 +17,8 @@ def test_get_access_token(client: TestClient) -> None:
         "username": settings.FIRST_SUPERUSER,
         "password": settings.FIRST_SUPERUSER_PASSWORD,
     }
-    r = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    r = client.post(
+        f"{settings.API_V1_STR}/login/access-token", data=login_data)
     tokens = r.json()
     assert r.status_code == 200
     assert "access_token" in tokens
@@ -29,7 +30,8 @@ def test_get_access_token_incorrect_password(client: TestClient) -> None:
         "username": settings.FIRST_SUPERUSER,
         "password": "incorrect",
     }
-    r = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    r = client.post(
+        f"{settings.API_V1_STR}/login/access-token", data=login_data)
     assert r.status_code == 400
 
 

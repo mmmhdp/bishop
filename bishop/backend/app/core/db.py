@@ -2,7 +2,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate
+from app.models.User import User, UserCreate
 from sqlalchemy.ext.asyncio import create_async_engine
 
 async_engine = create_async_engine(str(settings.SQLALCHEMY_DATABASE_URI))

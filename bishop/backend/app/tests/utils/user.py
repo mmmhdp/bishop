@@ -3,7 +3,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate, UserUpdate
+from app.models.User import User, UserCreate, UserUpdate
 from app.tests.utils.utils import random_email, random_lower_string
 
 

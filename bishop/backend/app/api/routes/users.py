@@ -12,10 +12,7 @@ from app.api.deps import (
 )
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
-from app.models import (
-    Item,
-    Message,
-    UpdatePassword,
+from app.models.User import (
     User,
     UserCreate,
     UserPublic,
@@ -23,7 +20,16 @@ from app.models import (
     UsersPublic,
     UserUpdate,
     UserUpdateMe,
+    UpdatePassword,
 )
+from app.models.Item import (
+    Item,
+)
+
+from app.models.Mixin import (
+    Message,
+)
+
 from app.utils import generate_new_account_email, send_email
 
 router = APIRouter()
@@ -138,7 +144,7 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
     statement_items = delete(Item).where(col(Item.owner_id) == current_user.id)
-    await session.exec(statement_items)  
+    await session.exec(statement_items)
     await session.delete(current_user)
     await session.commit()
     return Message(message="User deleted successfully")
@@ -227,7 +233,7 @@ async def delete_user(
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
     statement = delete(Item).where(col(Item.owner_id) == user_id)
-    await session.exec(statement)  
+    await session.exec(statement)
     await session.delete(user)
     await session.commit()
     return Message(message="User deleted successfully")

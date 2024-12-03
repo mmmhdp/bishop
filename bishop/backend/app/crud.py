@@ -5,9 +5,16 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.security import get_password_hash, verify_password
-from app.models import (
-    Item, ItemCreate,
+
+from app.models.User import (
     User, UserCreate, UserUpdate,
+)
+
+from app.models.Item import (
+    Item, ItemCreate,
+)
+
+from app.models.ChatMessage import (
     ChatMessage, ChatMessageCreate
 )
 

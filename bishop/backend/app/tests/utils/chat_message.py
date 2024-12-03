@@ -1,7 +1,7 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import crud
-from app.models import ChatMessage, ChatMessageCreate
+from app.models.ChatMessage import ChatMessage, ChatMessageCreate
 from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_lower_string
 

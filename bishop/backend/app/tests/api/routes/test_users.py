@@ -10,14 +10,15 @@ import pytest_asyncio
 from app import crud
 from app.core.config import settings
 from app.core.security import verify_password
-from app.models import User, UserCreate
+from app.models.User import User, UserCreate
 from app.tests.utils.utils import random_email, random_lower_string
 
 
 def test_get_users_superuser_me(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me",
+                   headers=superuser_token_headers)
     current_user = r.json()
     assert current_user
     assert current_user["is_active"] is True
@@ -29,7 +30,8 @@ def test_get_users_superuser_me(
 def test_get_users_normal_user_me(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me",
+                   headers=normal_user_token_headers)
     current_user = r.json()
     assert current_user
     assert current_user["is_active"] is True
@@ -93,7 +95,8 @@ async def test_get_existing_user_current_user(client: TestClient, db: AsyncSessi
         "username": username,
         "password": password,
     }
-    r = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    r = client.post(
+        f"{settings.API_V1_STR}/login/access-token", data=login_data)
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
@@ -170,7 +173,8 @@ async def test_retrieve_users(
     user_in2 = UserCreate(email=username2, password=password2)
     await crud.create_user(session=db, user_create=user_in2)
 
-    r = client.get(f"{settings.API_V1_STR}/users/", headers=superuser_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/",
+                   headers=superuser_token_headers)
     all_users = r.json()
 
     assert len(all_users["data"]) > 1
@@ -242,7 +246,8 @@ async def test_update_password_me(
     await db.refresh(user_db)
 
     assert r.status_code == 200
-    assert verify_password(settings.FIRST_SUPERUSER_PASSWORD, user_db.hashed_password)
+    assert verify_password(
+        settings.FIRST_SUPERUSER_PASSWORD, user_db.hashed_password)
 
 
 def test_update_password_me_incorrect_password(
@@ -335,7 +340,8 @@ def test_register_user_already_exists_error(client: TestClient) -> None:
         json=data,
     )
     assert r.status_code == 400
-    assert r.json()["detail"] == "The user with this email already exists in the system"
+    assert r.json()[
+        "detail"] == "The user with this email already exists in the system"
 
 
 @pytest.mark.asyncio
@@ -376,7 +382,8 @@ def test_update_user_not_exists(
         json=data,
     )
     assert r.status_code == 404
-    assert r.json()["detail"] == "The user with this id does not exist in the system"
+    assert r.json()[
+        "detail"] == "The user with this id does not exist in the system"
 
 
 @pytest.mark.asyncio
@@ -387,7 +394,7 @@ async def test_update_user_email_exists(
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
     user = await crud.create_user(session=db, user_create=user_in)
-    big_id: str = str(user.id) # ask yarik why so
+    big_id: str = str(user.id)  # ask yarik why so
 
     username2 = random_email()
     password2 = random_lower_string()
@@ -396,7 +403,8 @@ async def test_update_user_email_exists(
 
     data = {"email": user2.email}
     r = client.patch(
-        f"{settings.API_V1_STR}/users/{big_id}", # pretty strange? yes, it's python
+        # pretty strange? yes, it's python
+        f"{settings.API_V1_STR}/users/{big_id}",
         headers=superuser_token_headers,
         json=data,
     )
@@ -416,7 +424,8 @@ async def test_delete_user_me(client: TestClient, db: AsyncSession) -> None:
         "username": username,
         "password": password,
     }
-    r = client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    r = client.post(
+        f"{settings.API_V1_STR}/login/access-token", data=login_data)
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
@@ -495,7 +504,8 @@ async def test_delete_user_current_super_user_error(
         headers=superuser_token_headers,
     )
     assert r.status_code == 403
-    assert r.json()["detail"] == "Super users are not allowed to delete themselves"
+    assert r.json()[
+        "detail"] == "Super users are not allowed to delete themselves"
 
 
 @pytest.mark.asyncio

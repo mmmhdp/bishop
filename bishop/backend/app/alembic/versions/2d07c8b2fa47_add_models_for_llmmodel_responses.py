@@ -1,8 +1,8 @@
 """Add models for LLMModel Responses
 
-Revision ID: d8d4585a31b1
+Revision ID: 2d07c8b2fa47
 Revises: dd4c54e0aac6
-Create Date: 2024-12-03 15:55:22.200896
+Create Date: 2024-12-03 20:17:03.438987
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision = 'd8d4585a31b1'
+revision = '2d07c8b2fa47'
 down_revision = 'dd4c54e0aac6'
 branch_labels = None
 depends_on = None
