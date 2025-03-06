@@ -4,5 +4,5 @@ BISHOP.
 
 # Description
 
-Ai-powered app for enchanced onboarding process of new employees.
+I prefer the term "artificial person" myself.
 
