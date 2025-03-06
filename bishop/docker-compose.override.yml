@@ -92,10 +92,34 @@ services:
       - "1080:1080"
       - "1025:1025"
 
+  ui:
+    restart: "no"
+    ports:
+      - "5001:5001"
+    build:
+      context: ./ui
+    # command: sleep infinity  # Infinite loop to keep container alive doing nothing
+    command:
+      - uv
+      - run
+      - "app/main.py"
+    develop:
+      watch:
+        - path: ./ui
+          action: sync
+          target: /app
+          ignore:
+            - ./ui/.venv
+            - .venv
+        - path: ./ui/pyproject.toml
+          action: rebuild
+    volumes:
+      - ./ui/htmlcov:/app/htmlcov
+
   frontend:
     restart: "no"
     ports:
-      - "5173:80"
+      - "5173:81"
     build:
       context: ./frontend
       args:
