@@ -86,7 +86,7 @@ def post(msg: str):
     messages.append({"role": "user", "content": msg.rstrip()})
     # Send message to chat model (with streaming)
     # r = cli(messages, sp=sp, stream=True)
-    r = "some text"
+    r = "ZZZ response from model"
     messages.append({"role": "assistant", "generating": True,
                     "content": ""})  # Response initially blank
     get_response(r, idx+1)  # Start a new thread to fill in content

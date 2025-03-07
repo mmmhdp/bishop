@@ -1,5 +1,5 @@
 [project]
-name = "ui"
+name = "frontend"
 version = "0.1.0"
 description = "bishop frontend"
 readme = "README.md"

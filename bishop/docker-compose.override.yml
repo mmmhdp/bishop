@@ -92,39 +92,33 @@ services:
       - "1080:1080"
       - "1025:1025"
 
-  ui:
+  frontend:
     restart: "no"
     ports:
-      - "5001:5001"
+      - "5001:80"
     build:
-      context: ./ui
+      context: ./frontend
     # command: sleep infinity  # Infinite loop to keep container alive doing nothing
     command:
       - uv
       - run
-      - "app/main.py"
+      - uvicorn
+      - "app.main:app"
+      - --host=0.0.0.0
+      - --reload
+      - --port=80
     develop:
       watch:
-        - path: ./ui
+        - path: ./frontend
           action: sync
           target: /app
           ignore:
-            - ./ui/.venv
+            - ./frontend/.venv
             - .venv
-        - path: ./ui/pyproject.toml
+        - path: ./frontend/pyproject.toml
           action: rebuild
     volumes:
-      - ./ui/htmlcov:/app/htmlcov
-
-  frontend:
-    restart: "no"
-    ports:
-      - "5173:81"
-    build:
-      context: ./frontend
-      args:
-        - VITE_API_URL=http://localhost:8000
-        - NODE_ENV=development
+      - ./frontend/htmlcov:/app/htmlcov
 
 networks:
   traefik-public:
