@@ -20,6 +20,12 @@ from app.models.Mixin import (
 router = APIRouter()
 
 
+@router.get("/hello/", response_model=Message)
+async def hello(
+) -> Any:
+    return Message(message="Hello")
+
+
 @router.get("/", response_model=ChatMessagesPublic)
 async def read_messages(
     session: SessionDep,
