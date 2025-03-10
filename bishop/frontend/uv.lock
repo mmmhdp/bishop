@@ -164,6 +164,7 @@ name = "frontend"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "pydentic" },
     { name = "python-fasthtml" },
     { name = "requests" },
     { name = "uvicorn" },
@@ -171,6 +172,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "pydentic", specifier = ">=0.0.1.dev3" },
     { name = "python-fasthtml", specifier = ">=0.12.4" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "uvicorn", specifier = ">=0.34.0" },
@@ -272,6 +274,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pydentic"
+version = "0.0.1.dev3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-stdnum" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f8/2e/f14d8bc4141b680db8e8b175c167c38ff02c67569ac276f461a02f300cdd/pydentic-0.0.1.dev3.tar.gz", hash = "sha256:4c5ee9c260e3cbcdb2a2d725b1d98046cb2b5298e6d6154449a685cf4cca85ec", size = 6959 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/87/cc/91315af0dd1248fff43ce8e94bb19a7b480962115a632d59bc3f9f85f92c/pydentic-0.0.1.dev3-py3-none-any.whl", hash = "sha256:b37f690f262e02e781deae8588a411c596489bc2837701fbb5e8c59b31b4236e", size = 6903 },
+]
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -320,6 +334,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f3/87/f44d7c9f274c7ee665a29b885ec97089ec5dc034c7f3fafa03da9e39a09e/python_multipart-0.0.20.tar.gz", hash = "sha256:8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13", size = 37158 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/45/58/38b5afbc1a800eeea951b9285d3912613f2603bdf897a4ab0f4bd7f405fc/python_multipart-0.0.20-py3-none-any.whl", hash = "sha256:8a62d3a8335e06589fe01f2a3e178cdcc632f3fbe0d492ad9ee0ec35aab1f104", size = 24546 },
+]
+
+[[package]]
+name = "python-stdnum"
+version = "1.20"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/40/3f/dd322d9408e1850a8f0faab8e2a4bf2a55c0b722a72f7579362177dfad72/python-stdnum-1.20.tar.gz", hash = "sha256:ad2a2cf2eb025de408210235f36b4ae31252de3186240ccaa8126e117cb82690", size = 1191978 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d6/0f/8639d60f6d7c169836694aa81504c4ee9a95dfb73ccdb16be66df4785f52/python_stdnum-1.20-py2.py3-none-any.whl", hash = "sha256:111008e10391d54fb2afad2a10df70d5cb0c6c0a7ec82fec6f022cb8712961d3", size = 1059803 },
 ]
 
 [[package]]

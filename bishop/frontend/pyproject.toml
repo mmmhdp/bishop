@@ -5,6 +5,7 @@ description = "bishop frontend"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "pydentic>=0.0.1.dev3",
     "python-fasthtml>=0.12.4",
     "requests>=2.32.3",
     "uvicorn>=0.34.0",

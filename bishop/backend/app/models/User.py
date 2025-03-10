@@ -57,6 +57,7 @@ class User(UserBase, table=True):
 
 
 class UserPublic(UserBase):
+    "User Public Interface"
     id: uuid.UUID
 
 
