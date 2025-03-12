@@ -14,8 +14,10 @@ import httpx
 tlink = Script(src="https://cdn.tailwindcss.com")
 dlink = Link(rel="stylesheet",
              href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css")
+custom_link = Link(rel="stylesheet",
+                   href="app/assets/styles.css", type="text/css")
 
-hdrs = [tlink, dlink, picolink]
+hdrs = [tlink, dlink, picolink, custom_link]
 
 
 async def jwt_before(req, sess):
@@ -45,7 +47,7 @@ app, rt = fast_app(
         jwt_before,
         skip=[r'/favicon\.ico', r'/static/.*', r'.*\.css', r'.*\.js',
               '/login', '/signup', '/signup-redirect']
-    )
+    ),
 )
 
 setup_toasts(app, duration=2000)
