@@ -1,12 +1,11 @@
 from fasthtml.common import (
-    Form, Input, Button, Titled, RedirectResponse, H1, Redirect
+    Form, Input, Button, Titled, RedirectResponse, H1, Redirect,
+    Script, Link, fast_app, picolink, Main, cookie, setup_toasts, add_toast, Div, Beforeware, P
 )
+from fasthtml.common import *
 from dataclasses import dataclass, asdict
 from app.config import BACKEND_URL
 
-from fasthtml.common import (
-    Script, Link, fast_app, picolink, Main, cookie, setup_toasts, add_toast, Div, Beforeware, P
-)
 import requests
 import httpx
 
@@ -173,6 +172,19 @@ async def post(signup_info: SignUpInfo, sess):
             err_text = "INVALID RESPONSE CODE"
             add_toast(sess, err_text, "error")
 
+# Mock user data
+user_info = {
+    "name": "John Doe",
+    "email": "john.doe@example.com"
+}
+
+# Mock avatars
+avatars = [
+    {"name": "AI Mentor"},
+    {"name": "Chat Companion"},
+    {"name": "Virtual Assistant"},
+]
+
 
 @rt("/")
 def get():
@@ -180,9 +192,33 @@ def get():
         "signout",
         hx_post="/signout"
     )
-
     return Titled(
-        "MAIN PAGE",
-        signout_btn
+        "User Page",
+        Container(
+            Card(
+                H2("User Information"),
+                P(f"Name: {user_info['name']}"),
+                P(f"Email: {user_info['email']}"),
+            ),
+            H2("Avatars"),
+            Div(
+                *[Div(
+                    H3(avatar["name"]),
+                    Button(
+                        "Train", hx_post=f"/train/{avatar['name']}", cls="secondary"),
+                    Button("Chat", hx_get=f"/chat/{avatar['name']}")
+                ) for avatar in avatars],
+                cls="grid"
+            )
+        )
     )
-    return Redirect("/signup")
+
+
+@rt("/train/{name}")
+def train(name: str):
+    return f"Training {name}..."
+
+
+@rt("/chat/{name}")
+def chat(name: str):
+    return f"Chatting with {name}..."
