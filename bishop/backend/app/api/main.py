@@ -5,6 +5,7 @@ from app.user import user_controller
 from app.item import item_controller
 from app.common import mixin_controller
 from app.chat_message import chat_message_controller
+from app.transcription import transcription_controller
 
 api_router = APIRouter()
 
@@ -21,3 +22,6 @@ api_router.include_router(mixin_controller.router,
 
 api_router.include_router(chat_message_controller.router,
                           prefix="/msgs", tags=["msgs"])
+
+api_router.include_router(transcription_controller.router,
+                          prefix="/upload", tags=["transcriptions"])
