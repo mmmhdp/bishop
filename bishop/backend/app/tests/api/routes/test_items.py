@@ -5,7 +5,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 import pytest
 import pytest_asyncio
 
-from app.core.config import settings
+from app.common.config import settings
+
 from app.tests.utils.item import create_random_item
 
 

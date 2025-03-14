@@ -6,11 +6,12 @@ from fastapi.testclient import TestClient
 from sqlmodel import delete
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.config import settings
-from app.core.db import async_engine, init_db
+from app.common.config import settings
+from app.common.db import async_engine, init_db
 from app.main import app
-from app.models.Item import Item
-from app.models.User import User
+from app.item.Item import Item
+from app.user.User import User
+
 from app.tests.utils.user import authentication_token_from_email
 from app.tests.utils.utils import get_superuser_token_headers
 

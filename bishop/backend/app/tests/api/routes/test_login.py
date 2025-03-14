@@ -6,10 +6,10 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 import pytest
 import pytest_asyncio
 
-from app.core.config import settings
-from app.core.security import verify_password
-from app.models.User import User
-from app.utils import generate_password_reset_token
+from app.common.config import settings
+from app.security.security_service import verify_password
+from app.user.User import User
+from app.security.security_service import generate_password_reset_token
 
 
 def test_get_access_token(client: TestClient) -> None:
@@ -52,8 +52,8 @@ def test_recovery_password(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     with (
-        patch("app.core.config.settings.SMTP_HOST", "smtp.example.com"),
-        patch("app.core.config.settings.SMTP_USER", "admin@example.com"),
+        patch("app.common.config.settings.SMTP_HOST", "smtp.example.com"),
+        patch("app.common.config.settings.SMTP_USER", "admin@example.com"),
     ):
         email = "test@example.com"
         r = client.post(
