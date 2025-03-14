@@ -1,3 +1,8 @@
+from app.item.Item import Item
+
+from app.chat_message.ChatMessage import ChatMessage
+from app.llm_model_response.LLMModelResponse import LLMModelResponse
+
 from typing import TYPE_CHECKING
 import uuid
 
@@ -38,12 +43,6 @@ class UpdatePassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=40)
 
 
-if TYPE_CHECKING:
-    from app.models.Item import Item
-    from app.models.ChatMessage import ChatMessage
-    from app.models.LLModelResponse import LLModelResponse
-
-
 class User(UserBase, table=True):
     __tablename__ = "user"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -52,7 +51,7 @@ class User(UserBase, table=True):
         back_populates="owner", cascade_delete=True)
     chat_messages: list["ChatMessage"] = Relationship(
         back_populates="owner", cascade_delete=True)
-    llmodel_responses: list["LLModelResponse"] = Relationship(
+    llmmodel_responses: list["LLMModelResponse"] = Relationship(
         back_populates="owner", cascade_delete=True)
 
 

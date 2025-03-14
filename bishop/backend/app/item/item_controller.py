@@ -5,9 +5,9 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
-from app.api.deps import CurrentUser, SessionDep
-from app.models.Item import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate
-from app.models.Mixin import Message
+from app.common.api_deps import CurrentUser, SessionDep
+from app.item.Item import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate
+from app.common.models.Message import Message
 
 router = APIRouter()
 

@@ -4,18 +4,11 @@ from typing import Any
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.security import get_password_hash, verify_password
+from app.security.security_service import get_password_hash, verify_password
 
-from app.models.User import (
+
+from app.user.User import (
     User, UserCreate, UserUpdate,
-)
-
-from app.models.Item import (
-    Item, ItemCreate,
-)
-
-from app.models.ChatMessage import (
-    ChatMessage, ChatMessageCreate
 )
 
 
@@ -58,30 +51,3 @@ async def authenticate(*, session: AsyncSession, email: str, password: str) -> U
     if not verify_password(password, db_user.hashed_password):
         return None
     return db_user
-
-
-async def create_item(
-        *,
-        session: AsyncSession,
-        item_in: ItemCreate,
-        owner_id: uuid.UUID) -> Item:
-
-    db_item = Item.model_validate(item_in, update={"owner_id": owner_id})
-    session.add(db_item)
-    await session.commit()
-    await session.refresh(db_item)
-    return db_item
-
-
-async def create_chat_message(
-        *,
-        session: AsyncSession,
-        item_in: ChatMessageCreate,
-        owner_id: uuid.UUID) -> ChatMessage:
-
-    db_chat_message = ChatMessage.model_validate(
-        item_in, update={"owner_id": owner_id})
-    session.add(db_chat_message)
-    await session.commit()
-    await session.refresh(db_chat_message)
-    return db_chat_message

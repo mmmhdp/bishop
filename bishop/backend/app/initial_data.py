@@ -1,8 +1,8 @@
 import logging
-import asyncio 
+import asyncio
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.db import async_engine, init_db
+from app.common.db import async_engine, init_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

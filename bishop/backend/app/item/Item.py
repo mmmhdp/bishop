@@ -1,8 +1,7 @@
 import uuid
 
 from sqlmodel import Field, Relationship, SQLModel
-
-from app.models.User import User
+from typing import TYPE_CHECKING, Optional
 
 
 class ItemBase(SQLModel):
@@ -19,6 +18,10 @@ class ItemUpdate(ItemBase):
         default=None, min_length=1, max_length=255)  # type: ignore
 
 
+if TYPE_CHECKING:
+    from app.user.User import User
+
+
 class Item(ItemBase, table=True):
     __tablename__ = "item"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -26,7 +29,7 @@ class Item(ItemBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    owner: User | None = Relationship(back_populates="items")
+    owner: Optional["User"] = Relationship(back_populates="items")
 
 
 class ItemPublic(ItemBase):

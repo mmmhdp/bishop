@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
-from app.core.db import async_engine
+
+from app.common.db import async_engine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

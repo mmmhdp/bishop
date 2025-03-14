@@ -3,7 +3,11 @@ import uuid
 from sqlmodel import Field, Relationship, SQLModel, Column
 from sqlalchemy.types import Text
 
-from app.models.User import User
+from typing import TYPE_CHECKING, Optional
+
+
+if TYPE_CHECKING:
+    from app.user.User import User
 
 
 class ChatMessageBase (SQLModel):
@@ -18,6 +22,10 @@ class ChatMessageUpdate (ChatMessageBase):
     message: str | None = Field(default=None, sa_column=Column(Text))
 
 
+if TYPE_CHECKING:
+    from app.user.User import User
+
+
 class ChatMessage (ChatMessageBase, table=True):
     __tablename__ = "chat_message"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -25,7 +33,7 @@ class ChatMessage (ChatMessageBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    owner: User | None = Relationship(back_populates="chat_messages")
+    owner: Optional["User"] = Relationship(back_populates="chat_messages")
 
 
 class ChatMessagePublic (ChatMessageBase):

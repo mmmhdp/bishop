@@ -17,6 +17,7 @@ class VideoFileClipWithContext:
         if self.video_clip:
             self.video_clip.close()
 
+
 class AudioFileClipWithContext:
     def __init__(self, video):
         self.video = video
@@ -40,21 +41,23 @@ class Transcribator:
 
         with VideoFileClipWithContext("test_video.mp4") as video:
             with AudioFileClipWithContext(video) as audio:
-                    tmp_audio_file_name = "tmp_audio_" + str(uuid.uuid4()) + ".mp3"
-                    audio.write_audiofile(tmp_audio_file_name)
-                    transcription_uuid = self.transcribe_audio_impl(tmp_audio_file_name)
-                    os.remove(tmp_audio_file_name)
+                tmp_audio_file_name = "tmp_audio_" + str(uuid.uuid4()) + ".mp3"
+                audio.write_audiofile(tmp_audio_file_name)
+                transcription_uuid = self.transcribe_audio_impl(
+                    tmp_audio_file_name)
+                os.remove(tmp_audio_file_name)
 
         return transcription_uuid
-    
+
     def transcribe_audio(self, file_path: str):
         return self.transcribe_audio_impl(file_path)
-    
+
     def transcribe_audio_impl(self, file_path: str):
         result = self.model.transcribe(file_path)
         transcription_uuid = uuid.uuid4()
         transcription_file_name = str(transcription_uuid) + ".txt"
-        transcription_file_path = transcription_file_name # could be different in real project
+        # could be different in real project
+        transcription_file_path = transcription_file_name
         with open(transcription_file_path, "w", encoding="utf-8") as transcription_file:
             transcription_file.write(result["text"])
 

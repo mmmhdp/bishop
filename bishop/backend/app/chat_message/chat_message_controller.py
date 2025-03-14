@@ -5,17 +5,17 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
-from app.api.deps import CurrentUser, SessionDep
-from app.models.ChatMessage import (
+from app.common.api_deps import CurrentUser, SessionDep
+
+from app.chat_message.ChatMessage import (
     ChatMessage,
     ChatMessageCreate,
     ChatMessagePublic,
     ChatMessagesPublic,
     ChatMessageUpdate,
 )
-from app.models.Mixin import (
-    Message
-)
+
+from app.common.models.Message import Message
 
 router = APIRouter()
 

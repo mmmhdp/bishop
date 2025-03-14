@@ -1,9 +1,12 @@
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from app import crud
-from app.core.config import settings
-from app.models.User import User, UserCreate
 from sqlalchemy.ext.asyncio import create_async_engine
+
+from app.user import user_repository
+
+from app.common.config import settings
+
+from app.user.User import User, UserCreate
 
 async_engine = create_async_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
@@ -33,4 +36,4 @@ async def init_db(session: AsyncSession) -> None:
             password=settings.FIRST_SUPERUSER_PASSWORD,
             is_superuser=True,
         )
-        user = await crud.create_user(session=session, user_create=user_in)
+        user = await user_repository.create_user(session=session, user_create=user_in)

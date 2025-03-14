@@ -2,24 +2,29 @@ import uuid
 
 from sqlmodel import Field, Relationship, SQLModel, Column
 from sqlalchemy.types import Text
-from app.models.User import User
+
+from typing import TYPE_CHECKING, Optional
 
 
-class LLModelResponseBase (SQLModel):
+class LLMModelResponseBase (SQLModel):
     response: str | None = Field(default=None, sa_column=Column(Text))
     answer_to_msg_with_id: uuid.UUID | None = Field(default=None)
 
 
-class LLModelResponseCreate (LLModelResponseBase):
+class LLMModelResponseCreate (LLMModelResponseBase):
     pass
 
 
-class LLModelResponseUpdate (LLModelResponseBase):
+class LLMModelResponseUpdate (LLMModelResponseBase):
     response: str | None = Field(default=None, sa_column=Column(Text))
 
 
-class LLModelResponse (LLModelResponseBase, table=True):
-    __tablename__ = "llmodel_response"
+if TYPE_CHECKING:
+    from app.user.User import User
+
+
+class LLMModelResponse (LLMModelResponseBase, table=True):
+    __tablename__ = "llmmodel_response"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     response: str | None = Field(default=None, sa_column=Column(Text))
     answer_to_msg_with_id: uuid.UUID = Field(
@@ -30,14 +35,14 @@ class LLModelResponse (LLModelResponseBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    owner: User | None = Relationship(back_populates="llmodel_responses")
+    owner: Optional["User"] = Relationship(back_populates="llmmodel_responses")
 
 
-class LLModelResponsePublic (LLModelResponseBase):
+class LLMModelResponsePublic (LLMModelResponseBase):
     id: uuid.UUID
     owner_id: uuid.UUID
 
 
-class LLModelResponsesPublic (SQLModel):
-    data: list[LLModelResponsePublic]
+class LLMModelResponsesPublic (SQLModel):
+    data: list[LLMModelResponsePublic]
     count: int

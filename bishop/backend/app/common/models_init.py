@@ -1,16 +1,16 @@
-from .Mixin import (
+from app.common.models.Message import (
     Message
 )
-from .LLModelResponse import (
-    LLModelResponseBase,
-    LLModelResponseCreate,
-    LLModelResponseUpdate,
-    LLModelResponse,
-    LLModelResponsePublic,
-    LLModelResponsesPublic,
+from app.llm_model_response.LLMModelResponse import (
+    LLMModelResponseBase,
+    LLMModelResponseCreate,
+    LLMModelResponseUpdate,
+    LLMModelResponse,
+    LLMModelResponsePublic,
+    LLMModelResponsesPublic,
 )
 
-from .ChatMessage import (
+from app.chat_message.ChatMessage import (
     ChatMessageBase,
     ChatMessageCreate,
     ChatMessageUpdate,
@@ -18,7 +18,7 @@ from .ChatMessage import (
     ChatMessagePublic,
     ChatMessagesPublic,
 )
-from .Item import (
+from app.item.Item import (
     ItemBase,
     ItemCreate,
     ItemUpdate,
@@ -26,7 +26,7 @@ from .Item import (
     ItemPublic,
     ItemsPublic,
 )
-from .User import (
+from app.user.User import (
     UserBase,
     UserCreate,
     UserRegister,
@@ -37,9 +37,8 @@ from .User import (
     UserPublic,
 )
 
-
 Message.model_rebuild()
-LLModelResponse.model_rebuild()
+LLMModelResponse.model_rebuild()
 ChatMessage.model_rebuild()
 Item.model_rebuild()
 User.model_rebuild()
