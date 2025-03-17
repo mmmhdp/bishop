@@ -53,6 +53,14 @@ def upgrade():
     sa.ForeignKeyConstraint(['owner_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('transcription',
+    sa.Column('text', sa.Text(), nullable=True),
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('original_source', sa.Enum('AUDIO', 'VIDEO', name='sourcetype'), nullable=False),
+    sa.Column('owner_id', sa.Uuid(), nullable=False),
+    sa.ForeignKeyConstraint(['owner_id'], ['user.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     # ### end Alembic commands ###
 
 

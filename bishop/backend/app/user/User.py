@@ -2,6 +2,7 @@ from app.item.Item import Item
 
 from app.chat_message.ChatMessage import ChatMessage
 from app.llm_model_response.LLMModelResponse import LLMModelResponse
+from app.transcription.Transcription import Transcription
 
 from typing import TYPE_CHECKING
 import uuid
@@ -52,6 +53,8 @@ class User(UserBase, table=True):
     chat_messages: list["ChatMessage"] = Relationship(
         back_populates="owner", cascade_delete=True)
     llmmodel_responses: list["LLMModelResponse"] = Relationship(
+        back_populates="owner", cascade_delete=True)
+    transcriptions: list["Transcription"] = Relationship(
         back_populates="owner", cascade_delete=True)
 
 

@@ -9,7 +9,6 @@ from app.llm_model_response.LLMModelResponse import (
     LLMModelResponsePublic,
     LLMModelResponsesPublic,
 )
-
 from app.chat_message.ChatMessage import (
     ChatMessageBase,
     ChatMessageCreate,
@@ -36,9 +35,14 @@ from app.user.User import (
     User,
     UserPublic,
 )
+from app.transcription.Transcription import (
+    TranscriptionBase,
+    Transcription
+)
 
 Message.model_rebuild()
 LLMModelResponse.model_rebuild()
 ChatMessage.model_rebuild()
 Item.model_rebuild()
 User.model_rebuild()
+Transcription.model_rebuild()

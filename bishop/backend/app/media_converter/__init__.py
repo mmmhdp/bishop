@@ -1,0 +1,1 @@
+from .Transcribator import transcribator
