@@ -9,7 +9,6 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.common.config import settings
 from app.common.db import async_engine, init_db
 from app.main import app
-from app.item.Item import Item
 from app.user.User import User
 
 from app.tests.utils.user import authentication_token_from_email
