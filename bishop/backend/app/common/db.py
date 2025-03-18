@@ -20,11 +20,14 @@ async def init_db(session: AsyncSession) -> None:
     # Tables should be created with Alembic migrations
     # But if you don't want to use migrations, create
     # the tables un-commenting the next lines
-    # from sqlmodel import SQLModel
 
-    # from app.core.engine import engine
-    # This works because the models are already imported and registered from app.models
-    # SQLModel.metadata.create_all(engine)
+    import app.common.models_init  # noqa
+    from sqlmodel import SQLModel
+
+    async with async_engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+
+    # end of the comment
 
     search_result = await session.exec(
         select(User).where(User.email == settings.FIRST_SUPERUSER)
