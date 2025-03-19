@@ -16,6 +16,7 @@ from app.message.Message import (
 )
 
 from app.common.models.SimpleMessage import SimpleMessage
+from app.message.message_repository import get_user_messages, get_user_by_message_id
 
 router = APIRouter()
 
@@ -26,39 +27,25 @@ async def hello(
     return SimpleMessage(message="Hello")
 
 
-# @router.get("/", response_model=MessagesPublic)
-# async def read_messages(
-#     session: SessionDep,
-#     current_user: CurrentUser,
-#     skip: int = 0, limit: int = 100
-# ) -> Any:
-#     """
-#     Retrieve messages.
-#     """
+@router.get("/", response_model=MessagesPublic)
+async def read_messages(
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0, limit: int = 100
+) -> Any:
+    """
+    Retrieve messages.
+    """
+    if current_user.is_superuser:
+        messages_statement = select(Message).offset(skip).limit(limit)
+        messages_result = await session.exec(messages_statement)
+        messages = messages_result.all()
+    else:
+        messages = await get_user_messages(session=session, user=current_user, skip=skip, limit=limit)
+        
+    count = len(messages)
 
-#     if current_user.is_superuser:
-#         count_statement = select(func.count()).select_from(Message)
-#         messages_statement = select(Message).offset(skip).limit(limit)
-#     else:
-#         count_statement = (
-#             select(func.count())
-#             .select_from(Message)
-#             .where(Message.owner_id == current_user.id)
-#         )
-#         messages_statement = (
-#             select(Message)
-#             .where(Message.owner_id == current_user.id)
-#             .offset(skip)
-#             .limit(limit)
-#         )
-
-#     count_result = await session.exec(count_statement)
-#     count = count_result.one()
-
-#     messages_result = await session.exec(messages_statement)
-#     messages = messages_result.all()
-
-#     return MessagesPublic(data=messages, count=count)
+    return MessagesPublic(data=messages, count=count)
 
 
 @router.get("/{id}", response_model=MessagePublic)
@@ -69,8 +56,13 @@ async def read_message(session: SessionDep, current_user: CurrentUser, id: uuid.
     message = await session.get(Message, id)
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
-    # if not current_user.is_superuser and (message.owner_id != current_user.id):
-    #     raise HTTPException(status_code=400, detail="Not enough permissions")
+    if not current_user.is_superuser:
+         message_user = await get_user_by_message_id(session=session, message_id=id)
+         if not message_user:
+             raise HTTPException(status_code=500, detail="User for this message not found, logic error")
+         if message_user.id != current_user.id:
+            raise HTTPException(status_code=400, detail="Not enough permissions")
+
     return message
 
 
@@ -105,8 +97,13 @@ async def update_message(
     message = await session.get(Message, id)
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
-    # if not current_user.is_superuser and (message.owner_id != current_user.id):
-    #     raise HTTPException(status_code=400, detail="Not enough permissions")
+    if not current_user.is_superuser:
+        message_user = await get_user_by_message_id(session=session, message_id=id)
+        if not message_user:
+            raise HTTPException(status_code=500, detail="User for this message not found, logic error")
+        if message_user.id != current_user.id:
+            raise HTTPException(status_code=400, detail="Not enough permissions")
+        
     update_dict = item_in.model_dump(exclude_unset=True)
     message.sqlmodel_update(update_dict)
     session.add(message)
@@ -125,8 +122,13 @@ async def delete_message(
     message = await session.get(Message, id)
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
-    # if not current_user.is_superuser and (message.owner_id != current_user.id):
-    #     raise HTTPException(status_code=400, detail="Not enough permissions")
+    if not current_user.is_superuser:
+        message_user = await get_user_by_message_id(session=session, message_id=id)
+        if not message_user:
+            raise HTTPException(status_code=500, detail="User for this message not found, logic error")
+        if message_user.id != current_user.id:
+            raise HTTPException(status_code=400, detail="Not enough permissions")
+        
     await session.delete(message)
     await session.commit()
     return SimpleMessage(message="Message deleted successfully")

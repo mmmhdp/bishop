@@ -8,7 +8,7 @@ from fastapi import APIRouter, File, UploadFile, HTTPException
 from sqlmodel import func, select
 
 from app.common.api_deps import CurrentUser, SessionDep
-from app.media_converter import transcribator
+# from app.media_converter import transcribator
 
 router = APIRouter()
 
@@ -34,6 +34,6 @@ async def upload_audio(
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 
-    transcription = await transcribator.transcribe_audio_and_save_in_db(file_path, current_user, session)
+    #transcription = await transcribator.transcribe_audio_and_save_in_db(file_path, current_user, session)
     
-    return {"transcription": transcription.text, "uuid": transcription.id}
+    return {"transcription": "temporary removed to reduce up time", "uuid": "funny-string"}
