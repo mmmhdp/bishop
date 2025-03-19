@@ -16,7 +16,7 @@ from app.common.config import settings
 
 from app.user import user_repository
 
-from app.common.models.Message import Message
+from app.common.models.SimpleMessage import SimpleMessage
 
 from app.security.models.Token import Token
 from app.security.models.NewPassword import NewPassword
@@ -75,7 +75,7 @@ async def test_token(current_user: CurrentUser) -> Any:
 
 
 @router.post("/password-recovery/{email}")
-async def recover_password(email: str, session: SessionDep) -> Message:
+async def recover_password(email: str, session: SessionDep) -> SimpleMessage:
     """
     Password Recovery
     """
@@ -95,11 +95,11 @@ async def recover_password(email: str, session: SessionDep) -> Message:
         subject=email_data.subject,
         html_content=email_data.html_content,
     )
-    return Message(message="Password recovery email sent")
+    return SimpleMessage(message="Password recovery email sent")
 
 
 @router.post("/reset-password/")
-async def reset_password(session: SessionDep, body: NewPassword) -> Message:
+async def reset_password(session: SessionDep, body: NewPassword) -> SimpleMessage:
     """
     Reset password
     """
@@ -119,7 +119,7 @@ async def reset_password(session: SessionDep, body: NewPassword) -> Message:
     user.hashed_password = hashed_password
     session.add(user)
     await session.commit()
-    return Message(message="Password updated successfully")
+    return SimpleMessage(message="Password updated successfully")
 
 
 @router.post(

@@ -25,8 +25,7 @@ from app.user.User import (
     UserUpdateMe,
     UpdatePassword,
 )
-from app.item.Item import Item
-from app.common.models.Message import Message
+from app.common.models.SimpleMessage import SimpleMessage
 from app.email.email_service import generate_new_account_email, send_email
 
 router = APIRouter()
@@ -103,7 +102,7 @@ async def update_user_me(
     return current_user
 
 
-@router.patch("/me/password", response_model=Message)
+@router.patch("/me/password", response_model=SimpleMessage)
 async def update_password_me(
     *, session: SessionDep, body: UpdatePassword, current_user: CurrentUser
 ) -> Any:
@@ -120,7 +119,7 @@ async def update_password_me(
     current_user.hashed_password = hashed_password
     session.add(current_user)
     await session.commit()
-    return Message(message="Password updated successfully")
+    return SimpleMessage(message="Password updated successfully")
 
 
 @router.get("/me", response_model=UserPublic)
@@ -131,7 +130,7 @@ async def read_user_me(current_user: CurrentUser) -> Any:
     return current_user
 
 
-@router.delete("/me", response_model=Message)
+@router.delete("/me", response_model=SimpleMessage)
 async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     """
     Delete own user.
@@ -140,11 +139,9 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
         raise HTTPException(
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
-    statement_items = delete(Item).where(col(Item.owner_id) == current_user.id)
-    await session.exec(statement_items)
     await session.delete(current_user)
     await session.commit()
-    return Message(message="User deleted successfully")
+    return SimpleMessage(message="User deleted successfully")
 
 
 @router.post("/signup", response_model=UserPublic)
@@ -218,7 +215,7 @@ async def update_user(
 @router.delete("/{user_id}", dependencies=[Depends(get_current_active_superuser)])
 async def delete_user(
     session: SessionDep, current_user: CurrentUser, user_id: uuid.UUID
-) -> Message:
+) -> SimpleMessage:
     """
     Delete a user.
     """
@@ -229,8 +226,6 @@ async def delete_user(
         raise HTTPException(
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
-    statement = delete(Item).where(col(Item.owner_id) == user_id)
-    await session.exec(statement)
     await session.delete(user)
     await session.commit()
-    return Message(message="User deleted successfully")
+    return SimpleMessage(message="User deleted successfully")

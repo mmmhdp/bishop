@@ -1,8 +1,5 @@
-from app.item.Item import Item
-
-from app.chat_message.ChatMessage import ChatMessage
-from app.llm_model_response.LLMModelResponse import LLMModelResponse
 from app.transcription.Transcription import Transcription
+from app.avatar.Avatar import Avatar
 
 from typing import TYPE_CHECKING
 import uuid
@@ -48,14 +45,10 @@ class User(UserBase, table=True):
     __tablename__ = "user"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-    items: list["Item"] = Relationship(
-        back_populates="owner", cascade_delete=True)
-    chat_messages: list["ChatMessage"] = Relationship(
-        back_populates="owner", cascade_delete=True)
-    llmmodel_responses: list["LLMModelResponse"] = Relationship(
-        back_populates="owner", cascade_delete=True)
     transcriptions: list["Transcription"] = Relationship(
         back_populates="owner", cascade_delete=True)
+    avatars: list["Avatar"] = Relationship(
+        back_populates="user", cascade_delete=True)
 
 
 class UserPublic(UserBase):

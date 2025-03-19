@@ -3,7 +3,7 @@ from pydantic.networks import EmailStr
 
 from app.common.api_deps import get_current_active_superuser
 
-from app.common.models.Message import Message
+from app.common.models.SimpleMessage import SimpleMessage
 
 from app.email.email_service import generate_test_email, send_email
 
@@ -15,7 +15,7 @@ router = APIRouter()
     dependencies=[Depends(get_current_active_superuser)],
     status_code=201,
 )
-async def test_email(email_to: EmailStr) -> Message:
+async def test_email(email_to: EmailStr) -> SimpleMessage:
     """
     Test emails.
     """
@@ -25,7 +25,7 @@ async def test_email(email_to: EmailStr) -> Message:
         subject=email_data.subject,
         html_content=email_data.html_content,
     )
-    return Message(message="Test email sent")
+    return SimpleMessage(message="Test email sent")
 
 
 @router.get("/health-check/")
