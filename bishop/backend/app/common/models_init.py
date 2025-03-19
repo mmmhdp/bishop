@@ -31,6 +31,7 @@ from app.chat.Chat import (
 from app.avatar.Avatar import (
     AvatarBase,
     AvatarCreate,
+    AvatarUpdate,
     Avatar
 )
 

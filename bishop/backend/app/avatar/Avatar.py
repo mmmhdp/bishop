@@ -13,6 +13,9 @@ class AvatarBase (SQLModel):
 class AvatarCreate (AvatarBase):
     pass
 
+class AvatarUpdate (AvatarBase):
+    pass
+
 class Avatar (AvatarBase, table=True):
     __tablename__ = "avatar"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)

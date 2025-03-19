@@ -47,7 +47,6 @@ def test_use_access_token(
     assert "email" in result
 
 
-@pytest.mark.asyncio
 def test_recovery_password(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
@@ -64,7 +63,6 @@ def test_recovery_password(
         assert r.json() == {"message": "Password recovery email sent"}
 
 
-@pytest.mark.asyncio
 def test_recovery_password_user_not_exits(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
