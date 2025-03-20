@@ -3,9 +3,7 @@ from moviepy import VideoFileClip
 import uuid
 import os
 from app.user.User import User
-from app.transcription.Transcription import Transcription, SourceType
 from sqlmodel.ext.asyncio.session import AsyncSession
-from app.transcription import transcription_repository
 
 class VideoFileClipWithContext:
     def __init__(self, video_path):

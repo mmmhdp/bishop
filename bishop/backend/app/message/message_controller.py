@@ -59,7 +59,7 @@ async def read_message(session: SessionDep, current_user: CurrentUser, id: uuid.
     if not current_user.is_superuser:
          message_user = await get_user_by_message_id(session=session, message_id=id)
          if not message_user:
-             raise HTTPException(status_code=500, detail="User for this message not found, logic error")
+            raise HTTPException(status_code=500, detail="User for this message not found, logic error")
          if message_user.id != current_user.id:
             raise HTTPException(status_code=400, detail="Not enough permissions")
 
