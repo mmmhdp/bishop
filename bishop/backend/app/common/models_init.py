@@ -19,10 +19,6 @@ from app.user.User import (
     User,
     UserPublic,
 )
-from app.transcription.Transcription import (
-    TranscriptionBase,
-    Transcription
-)
 from app.chat.Chat import (
     ChatBase,
     ChatCreate,
@@ -34,10 +30,14 @@ from app.avatar.Avatar import (
     AvatarUpdate,
     Avatar
 )
+from app.train_data.TrainData import (
+    TrainDataBase,
+    TrainDataCreate,
+    TrainData
+)
 
 SimpleMessage.model_rebuild()
 Message.model_rebuild()
 User.model_rebuild()
-Transcription.model_rebuild()
 Chat.model_rebuild()
 Avatar.model_rebuild()

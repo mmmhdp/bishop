@@ -1,4 +1,3 @@
-from app.transcription.Transcription import Transcription
 from app.avatar.Avatar import Avatar
 
 from typing import TYPE_CHECKING
@@ -45,8 +44,6 @@ class User(UserBase, table=True):
     __tablename__ = "user"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-    transcriptions: list["Transcription"] = Relationship(
-        back_populates="owner", cascade_delete=True)
     avatars: list["Avatar"] = Relationship(
         back_populates="user", cascade_delete=True)
 
