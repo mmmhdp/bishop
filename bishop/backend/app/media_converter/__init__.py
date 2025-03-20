@@ -1,1 +1,1 @@
-from .Transcribator import transcribator
+# from .Transcribator import transcribator

@@ -27,7 +27,6 @@ def test_get_users_superuser_me(
     assert current_user["email"] == settings.FIRST_SUPERUSER
 
 
-@pytest.mark.asyncio
 def test_get_users_normal_user_me(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
@@ -113,7 +112,6 @@ async def test_get_existing_user_current_user(client: TestClient, db: AsyncSessi
     assert existing_user.email == api_user["email"]
 
 
-@pytest.mark.asyncio
 def test_get_existing_user_permissions_error(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
@@ -145,7 +143,6 @@ async def test_create_user_existing_username(
     assert "_id" not in created_user
 
 
-@pytest.mark.asyncio
 def test_create_user_by_normal_user(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
