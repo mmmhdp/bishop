@@ -6,7 +6,6 @@ from fasthtml.common import *
 from dataclasses import dataclass, asdict
 from app.config import BACKEND_URL
 
-import requests
 import httpx
 
 
@@ -172,53 +171,73 @@ async def post(signup_info: SignUpInfo, sess):
             err_text = "INVALID RESPONSE CODE"
             add_toast(sess, err_text, "error")
 
-# Mock user data
-user_info = {
-    "name": "John Doe",
-    "email": "john.doe@example.com"
-}
 
-# Mock avatars
-avatars = [
-    {"name": "AI Mentor"},
-    {"name": "Chat Companion"},
-    {"name": "Virtual Assistant"},
-]
+async def fetch_user_info(sess):
+    token_type = sess.get("token_type")
+    token = sess.get("access_token")
+    if not token_type or not token:
+        return None
+
+    headers = {"Authorization": f"{token_type} {token}"}
+    async with httpx.AsyncClient(headers=headers) as client:
+        response = await client.get(f"{BACKEND_URL}/users/me")
+        return response.json() if response.status_code == 200 else None
+
+
+async def fetch_avatars(sess):
+    token_type = sess.get("token_type")
+    token = sess.get("access_token")
+    if not token_type or not token:
+        return []
+
+    headers = {"Authorization": f"{token_type} {token}"}
+    async with httpx.AsyncClient(headers=headers) as client:
+        response = await client.get(f"{BACKEND_URL}/avatar/")
+        return response.json().get("data", []) if response.status_code == 200 else []
 
 
 @rt("/")
-def get():
+async def get(sess):
+    user_info = await fetch_user_info(sess)
+    avatars = await fetch_avatars(sess)
+
+    if not user_info:
+        return Redirect("/login")
+
     signout_btn = Button(
-        "signout",
-        hx_post="/signout"
+        "Sign Out",
+        hx_post=f"{BACKEND_URL}/signout"
     )
+
     return Titled(
         "User Page",
         Container(
             Card(
                 H2("User Information"),
-                P(f"Name: {user_info['name']}"),
+                P(f"Name: {user_info.get('full_name', 'N/A')}"),
                 P(f"Email: {user_info['email']}"),
+                signout_btn
             ),
             H2("Avatars"),
             Div(
                 *[Div(
                     H3(avatar["name"]),
                     Button(
-                        "Train", hx_post=f"/train/{avatar['name']}", cls="secondary"),
-                    Button("Chat", hx_get=f"/chat/{avatar['name']}")
+                        "Train",
+                        hx_post=f"{BACKEND_URL}/avatar/{avatar['id']}/train",
+                        hx_target="#spa-content",
+                        hx_swap="innerHTML",
+                        cls="secondary"
+                    ),
+                    Button(
+                        "Chat",
+                        hx_get=f"{BACKEND_URL}/chat/{avatar['id']}",
+                        hx_target="#spa-content",
+                        hx_swap="innerHTML"
+                    )
                 ) for avatar in avatars],
                 cls="grid"
-            )
+            ),
+            Div(id="spa-content")  # dedicated SPA content area
         )
     )
-
-
-@rt("/train/{name}")
-def train(name: str):
-    return f"Training {name}..."
-
-
-@rt("/chat/{name}")
-def chat(name: str):
-    return f"Chatting with {name}..."
