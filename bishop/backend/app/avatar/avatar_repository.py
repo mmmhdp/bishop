@@ -9,6 +9,7 @@ from app.avatar.Avatar import (
 )
 from app.user.User import User
 
+
 async def create_avatar(*, session: AsyncSession, avatar_create: AvatarCreate, user: User) -> Avatar:
     db_obj = Avatar(
         user_id=user.id,

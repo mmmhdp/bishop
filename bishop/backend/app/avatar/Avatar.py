@@ -7,14 +7,18 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from app.user.User import User
 
+
 class AvatarBase (SQLModel):
     name: str = Field(sa_column=Column(Text, nullable=False))
+
 
 class AvatarCreate (AvatarBase):
     pass
 
+
 class AvatarUpdate (AvatarBase):
     pass
+
 
 class Avatar (AvatarBase, table=True):
     __tablename__ = "avatar"
@@ -24,3 +28,13 @@ class Avatar (AvatarBase, table=True):
     )
     weight_url: str | None = Field(default=None, sa_column=(Text))
     user: Optional["User"] = Relationship(back_populates="avatars")
+
+
+class AvatarPublic(AvatarBase):
+    "Avatar Public Interface"
+    name: str
+
+
+class AvatarsPublic(SQLModel):
+    data: list[AvatarPublic]
+    count: int
