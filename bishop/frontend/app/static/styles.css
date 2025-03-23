@@ -11,6 +11,7 @@
 }
 
 html {
+  background-color: var(--background);
   box-sizing: border-box;
   width: 100%;
   height: 100%;
@@ -456,20 +457,21 @@ button {
 /* Index Page */
 
 .page-shell {
-  background: var(--background);
+  background-color: var(--background);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
 .main-header {
-  background: var(--background);
+  background-color: var(--background);
   padding: 1rem 2rem;
   border-bottom: 2px solid var(--accent);
   width: 100%;
 }
 
 .header-inner {
+  background-color: var(--background);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -479,6 +481,7 @@ button {
 }
 
 .main-footer {
+  background-color: var(--background);
   text-align: center;
   padding: 2rem 1rem;
   font-size: 0.9rem;
@@ -489,6 +492,7 @@ button {
 }
 
 .main-content {
+  background-color: var(--background);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -497,17 +501,20 @@ button {
 }
 
 .main-content > * {
+  background-color: var(--background);
   max-width: 960px;
   margin: 0 auto;
   width: 100%;
 }
 
 .project-intro {
+  background-color: var(--background);
   margin-top: 2rem;
   padding: 1rem 0;
 }
 
 .project-intro h2 {
+  background-color: var(--background);
   color: var(--accent);
   font-size: 1.25rem;
   text-transform: uppercase;
@@ -515,6 +522,7 @@ button {
 }
 
 .project-intro p {
+  background-color: var(--background);
   margin-bottom: 1rem;
   text-align: justify;
   white-space: normal;
@@ -524,6 +532,7 @@ button {
 
 
 .brand {
+  background-color: var(--background);
   font-weight: 700;
   font-size: 1.2rem;
   color: var(--accent);
@@ -537,4 +546,12 @@ button {
 
 .nav-links a:hover {
   text-decoration: underline;
+}
+
+.avatar-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two equal columns */
+  gap: 10px;
+  width: 100%;
+  background-color: var(--background);
 }

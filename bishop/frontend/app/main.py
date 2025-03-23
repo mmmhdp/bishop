@@ -1,3 +1,4 @@
+import asyncio
 from app.logging import logger
 from fasthtml.common import *
 from dataclasses import dataclass, asdict
@@ -9,16 +10,16 @@ import httpx
 
 main_css = Link(rel="stylesheet",
                 href="app/static/styles.css", type="text/css")
-hdrs = [
-    main_css,
-]
+fav = Link(rel="icon", type="image/svg+xml", href="app/static/favicon.ico")
+og = Link(rel="icon", type="image/svg+xml", href="app/static/og-image.ico")
+hdrs = [main_css, fav, og]
 
 
 async def jwt_before(req, sess):
     jwt_keys = ["token_type", "access_token"]
     for key in jwt_keys:
         if key not in sess:
-            return Redirect("/login")
+            return Redirect("/")
 
     token_type = sess["token_type"]
     token = sess["access_token"]
@@ -31,7 +32,7 @@ async def jwt_before(req, sess):
         res = await cli.post(url_to_call)
 
     if res.status_code != 200:
-        return Redirect("/login")
+        return Redirect("/")
 
 app, rt = fast_app(
     debug=True,
@@ -40,7 +41,7 @@ app, rt = fast_app(
     before=Beforeware(
         jwt_before,
         skip=[r'/favicon\.ico', r'/static/.*', r'.*\.css', r'.*\.js',
-              '/login', '/signup', '/signup-redirect']
+              '/login', '/', '/login-redirect', '/signup', '/signup-redirect']
     ),
 )
 
@@ -177,7 +178,7 @@ def post(sess):
     for key in jwt_keys:
         if key in sess:
             del sess[key]
-    return Redirect("/login")
+    return Redirect("/")
 
 
 @rt("/signup-redirect")
@@ -253,10 +254,6 @@ async def post(signup_info: SignUpInfo, sess):
             add_toast(sess, err_text, "info")
 
 
-upload_dir = Path("filez")
-upload_dir.mkdir(exist_ok=True)
-
-
 async def fetch_user_info(sess):
     token_type = sess.get("token_type")
     token = sess.get("access_token")
@@ -281,141 +278,198 @@ async def fetch_avatars(sess):
         return response.json().get("data", []) if "data" in response.json() else []
 
 
-@rt("/adsasd")
-async def get(sess):
-    return Main(
-        H1("MAIN PAGE NAH")
+@rt("/index-redirect")
+def get():
+    return Redirect("/index")
+
+
+async def user_info_box(sess):
+    signout_btn = Button(
+        "Sign Out",
+        hx_post="/signout",
+    )
+    user_info = await fetch_user_info(sess)
+
+    return Grid(
+        H2("User Information"),
+        P(f"Name: {user_info.get('full_name', 'N/A')}"),
+        P(f"Email: {user_info['email']}"),
+        signout_btn
+    )
+
+
+@rt("/avatar-list")
+async def avatars_list_box(sess):
+    avatars = await fetch_avatars(sess)
+
+    avatar_list_view = Div(
+        *[Button(
+            avatar["name"],
+            hx_get=f"/avatar/{avatar['id']}",
+            hx_target="#avatar-view",
+            hx_swap="innerHTML",
+        ) for avatar in avatars],
+        cls="avatar-list",
+    )
+
+    return Div(
+        H2("Avatars"),
+        avatar_list_view,
+        id="avatar-view"
     )
 
 
 @rt("/index")
 async def get(sess):
 
-    user_info = await fetch_user_info(sess)
-    avatars = await fetch_avatars(sess)
-
-    if not user_info:
-        return Redirect("/login")
-
     signout_btn = Button(
         "Sign Out",
         hx_post="/signout",
     )
 
-    avatar_list_view = Div(
-        *[Button(
-            avatar["name"],
-            hx_get=f"/avatar/{avatar['id']}",
-            hx_target="#avatar-actions",
-            hx_swap="innerHTML",
-            cls="avatar-button",
-            style="display: block; padding: 10px; background-color: #444; color: white; width: 100%;"
-        ) for avatar in avatars],
-        cls="avatar-list",
-        style="display: flex; flex-direction: column; gap: 10px; width: 50%;"
-    )
-
-    avatar_actions_view = Div(
-        H2("Select an avatar to interact with"),
-        id="avatar-actions",
-        style="width: 50%; padding: 10px; border-left: 1px solid white;"
-    )
-
+    user_box = await user_info_box(sess),
+    avatar_list_view = await avatars_list_box(sess)
     return Titled(
         "User Page",
-        Container(
-            Card(
-                H2("User Information"),
-                P(f"Name: {user_info.get('full_name', 'N/A')}"),
-                P(f"Email: {user_info['email']}"),
-                signout_btn
-            ),
-            H2("Avatars"),
-            Div(
-                avatar_list_view,
-                avatar_actions_view,
-                style="display: flex; gap: 20px; width: 100%;"
-            )
-        )
+        user_box,
+        avatar_list_view,
+
     )
 
 
 @rt("/avatar/{avatar_id}")
 def avatar_view(avatar_id: str):
     return Div(
-        H2(f"Avatar: {avatar_id}"),
+        Card(f"Avatar: {avatar_id}"),
         Button("Train",
                hx_get=f"/avatar/{avatar_id}/train_widget",
-               hx_target="#avatar-actions",
-               hx_swap="innerHTML"),
+               hx_target="#avatar-view",
+               hx_swap="innerHTML"
+               ),
+
         Button("Chat",
                hx_get=f"/avatar/{avatar_id}/chat_widget",
-               hx_target="#avatar-actions",
-               hx_swap="innerHTML"),
+               hx_target="#avatar-view",
+               hx_swap="innerHTML"
+               ),
+
+        Button("To avatars list",
+               hx_get="/avatar-list",
+               hx_target="#avatar-view",
+               hx_swap="innerHTML",
+               ),
+        id="avatar-view"
     )
 
 
 @rt("/avatar/{avatar_id}/train_widget")
-def train_widget(avatar_id: str):
-    return Div(
-        H2(f"Training Avatar: {avatar_id}"),
-        Form(
-            Input(type="file", name="file"),
-            Button("Upload Training Data", type="submit", cls="secondary"),
-            action=f"/avatar/{avatar_id}/upload",
-            method="post",
-            enctype="multipart/form-data",
-        ),
-        Button("Start Training",
-               hx_post=f"{BACKEND_URL}/avatar/{avatar_id}/start_train",
-               hx_target="#train-status",
-               hx_swap="innerHTML"),
-        Button("Stop Training",
-               hx_post=f"{BACKEND_URL}/avatar/{avatar_id}/stop_train",
-               hx_target="#train-status",
-               hx_swap="innerHTML"),
-        Button("Back",
-               hx_get=f"/avatar/{avatar_id}",
-               hx_target="#avatar-actions",
-               hx_swap="innerHTML"),
-        Div(id="train-status")
-    )
-
-
-@rt("/avatar/{avatar_id}/send_message")
-def send_mock_message(avatar_id: str, user_message: str):
-    mock_responses = {
-        "hello": "Hello! How can I assist you today?",
-        "how are you": "I'm just a bot, but I'm here to help!",
-        "bye": "Goodbye! Have a great day!",
-        "default": "I'm not sure how to respond to that, but I'm learning!"
+def avatar_train_widget(avatar_id: str):
+    model_state = {
+        "status": "idle",
+        "trained_on": 5,
+        "last_update": "2025-03-23 14:02"
     }
-    bot_reply = mock_responses.get(
-        user_message.lower(), mock_responses["default"])
+
     return Div(
-        P(f"You: {user_message}", cls="chat chat-end chat-bubble-primary"),
-        P(f"Avatar: {bot_reply}", cls="chat chat-start chat-bubble-secondary"),
-        id="chat-box",
-        style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"
+        Card(
+            H3("Training Status"),
+            P(f"Model status: {model_state['status']}"),
+            P(f"Trained on: {model_state['trained_on']} file(s)"),
+            P(f"Last updated: {model_state['last_update']}"),
+            cls="training-card"
+        ),
+
+        Form(
+            Input(type="text", name="item_in", value=avatar_id, readonly=True),
+            Input(type="file", name="file", multiple=True),
+            Button("Add Files"),
+            action="/api/v1/upload/",  # still uses your existing backend
+            method="post",
+            enctype="multipart/form-data"
+        ),
+
+        Div(
+            Button("Start Training",
+                   hx_post=f"/avatar/{avatar_id}/train/start",
+                   hx_target="#avatar-train",
+                   hx_swap="outerHTML"
+                   ),
+            Button("Stop Training",
+                   hx_post=f"/avatar/{avatar_id}/train/stop",
+                   hx_target="#avatar-train",
+                   hx_swap="outerHTML"
+                   ),
+            Button("Back",
+                   hx_get=f"/avatar/{avatar_id}",
+                   hx_target="#avatar-view",
+                   hx_swap="innerHTML"
+                   ),
+            cls="train-actions"
+        ),
+
+        id="avatar-train"
     )
+
+
+# Memory-based chat storage: avatar_id → list of messages
+chat_sessions: dict[str, list[dict]] = {}
+
+# Reusable chat message component
+
+
+def ChatMessage(msg: dict) -> FT:
+    role = msg["role"]
+    cls = "chat-message-user" if role == "user" else "chat-message-bot"
+    return Div(
+        P(f"{role.title()}: {msg['content']}"),
+        cls=cls
+    )
+
+# Route: Render chat widget for a given avatar
 
 
 @rt("/avatar/{avatar_id}/chat_widget")
-def chat_widget(avatar_id: str):
+def avatar_chat_widget(avatar_id: str):
+    print("Chat widget triggered")
+    chat_sessions.setdefault(avatar_id, [])  # Ensure chat list exists
+
     return Div(
-        H2(f"Chat with Avatar: {avatar_id}"),
-        Div(id="chat-box", cls="chat-box h-[73vh] overflow-y-auto border p-2"),
+        H3(f"Chat with Avatar {avatar_id}"),
+        Div(
+            *[ChatMessage(m) for m in chat_sessions[avatar_id]],
+            id="chat-history",
+            cls="chat-history"
+        ),
         Form(
-            Input(name="user_message", placeholder="Type a message",
-                  cls="input input-bordered w-full"),
-            Button("Send", cls="btn btn-primary", type="submit"),
-            action=f"/avatar/{avatar_id}/send_message",
-            method="post",
-            hx_target="#chat-box",
+            Input(name="message", placeholder="Type your message...", required=True),
+            Button("Send", type="submit"),
+            hx_post=f"/avatar/{avatar_id}/send_message",
+            hx_target="#chat-history",
             hx_swap="beforeend"
         ),
-        Button("Back",
-               hx_get=f"/avatar/{avatar_id}",
-               hx_target="#avatar-actions",
-               hx_swap="innerHTML")
+        Button(
+            "Back",
+            hx_get=f"/avatar/{avatar_id}",
+            hx_target="#avatar-view",
+            hx_swap="innerHTML"
+        ),
+        id="avatar-chat"
+    )
+
+# Route: Handle sending message and return user + bot responses
+
+
+@rt("/avatar/{avatar_id}/send_message", methods=["POST"])
+async def avatar_chat_send(avatar_id: str, message: str):
+    chat_sessions.setdefault(avatar_id, [])
+    chat_sessions[avatar_id].append({"role": "user", "content": message})
+
+    # Simulate mock bot response
+    await asyncio.sleep(0.5)
+    reply = f"MockBot: I received “{message}” and will respond soon!"
+    chat_sessions[avatar_id].append({"role": "bot", "content": reply})
+
+    return (
+        ChatMessage({"role": "user", "content": message}),
+        ChatMessage({"role": "bot", "content": reply})
     )
