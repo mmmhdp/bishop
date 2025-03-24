@@ -12,20 +12,22 @@ api_router = APIRouter()
 
 api_router.include_router(login_controller.router, tags=["login"])
 
-api_router.include_router(user_controller.router,
-                          prefix="/users", tags=["users"])
 
 api_router.include_router(mixin_controller.router,
                           prefix="/utils", tags=["utils"])
 
-api_router.include_router(message_controller.router,
-                          prefix="/msgs", tags=["msgs"])
 
-api_router.include_router(chat_controller.router,
-                          prefix="/chat", tags=["chats"])
+chat_controller.router.include_router(message_controller.router,
+                                      prefix="/{chat_id}/msgs", tags=["msgs"])
 
-api_router.include_router(avatar_controller.router,
-                          prefix="/avatar", tags=["avatars"])
+avatar_controller.router.include_router(chat_controller.router,
+                                        prefix="/{avatar_id}/chat", tags=["chats"])
 
-api_router.include_router(train_data_controller.router,
-                          prefix="/upload", tags=["uploads"])
+avatar_controller.router.include_router(train_data_controller.router,
+                                        prefix="/{avatar_id}/train", tags=["train"])
+
+api_router.include_router(
+    avatar_controller.router, prefix="/avatars", tags=["avatars"])
+
+api_router.include_router(user_controller.router,
+                          prefix="/users", tags=["users"])

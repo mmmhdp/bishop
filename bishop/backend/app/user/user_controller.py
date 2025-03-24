@@ -3,8 +3,8 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import col, delete, func, select
-
 from app.user import user_repository
+from app.avatar import avatar_controller
 
 from app.common.api_deps import (
     CurrentUser,

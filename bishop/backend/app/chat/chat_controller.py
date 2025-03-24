@@ -25,8 +25,8 @@ async def create_chat(*, session: SessionDep, current_user: CurrentUser, chat_in
     """
     # TODO: check if
     # - avatar is created
-    # - avatar belongs to current_user 
+    # - avatar belongs to current_user
     # - chat with this avatar wasn't created earlier
     new_chat = await chat_repository.create_chat(session=session, chat_create=chat_in)
-    
+
     return {"chat_id": new_chat.id}

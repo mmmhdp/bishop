@@ -31,8 +31,3 @@ async def test_email(email_to: EmailStr) -> SimpleMessage:
 @router.get("/health-check/")
 async def health_check() -> bool:
     return True
-
-
-@router.get("/ping/")
-async def ping() -> str:
-    return "pong"
