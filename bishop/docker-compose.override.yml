@@ -63,10 +63,13 @@ services:
       context: ./backend
     # command: sleep infinity  # Infinite loop to keep container alive doing nothing
     command:
-      - fastapi
+      - uv
       - run
+      - uvicorn
+      - "app.main:app"
       - --reload
-      - "app/main.py"
+      - --host=0.0.0.0
+      - --port=8000
     develop:
       watch:
         - path: ./backend
@@ -80,6 +83,7 @@ services:
     # TODO: remove once coverage is done locally
     volumes:
       - ./backend/htmlcov:/app/htmlcov
+      - ./backend/app/alembic/versions:/app/app/alembic/versions
     environment:
       SMTP_HOST: "mailcatcher"
       SMTP_PORT: "1025"
@@ -95,12 +99,30 @@ services:
   frontend:
     restart: "no"
     ports:
-      - "5173:80"
+      - "5001:80"
     build:
       context: ./frontend
-      args:
-        - VITE_API_URL=http://localhost:8000
-        - NODE_ENV=development
+    # command: sleep infinity  # Infinite loop to keep container alive doing nothing
+    command:
+      - uv
+      - run
+      - uvicorn
+      - "app.main:app"
+      - --host=0.0.0.0
+      - --reload
+      - --port=80
+    develop:
+      watch:
+        - path: ./frontend
+          action: sync
+          target: /app
+          ignore:
+            - ./frontend/.venv
+            - .venv
+        - path: ./frontend/pyproject.toml
+          action: rebuild
+    volumes:
+      - ./frontend/htmlcov:/app/htmlcov
 
 networks:
   traefik-public:

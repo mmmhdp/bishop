@@ -142,9 +142,6 @@ services:
       - default
     build:
       context: ./frontend
-      args:
-        - VITE_API_URL=https://api.${DOMAIN?Variable not set}
-        - NODE_ENV=production
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-public
@@ -162,6 +159,7 @@ services:
 
       # Enable redirection for HTTP and HTTPS
       - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.middlewares=https-redirect
+
 volumes:
   app-db-data:
 

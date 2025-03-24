@@ -2,6 +2,10 @@ FROM python:3.12
 
 WORKDIR /app/
 
+
+# Устанавливаем FFmpeg
+RUN apt update && apt install ffmpeg -y
+
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
 COPY --from=ghcr.io/astral-sh/uv:0.4.15 /uv /bin/uv
