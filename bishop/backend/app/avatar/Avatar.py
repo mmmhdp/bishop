@@ -4,6 +4,8 @@ from sqlmodel import Field, Relationship, SQLModel, Column
 from sqlalchemy.types import Text
 from typing import TYPE_CHECKING, Optional
 
+from app.chat.Chat import Chat
+
 if TYPE_CHECKING:
     from app.user.User import User
 
@@ -13,11 +15,11 @@ class AvatarBase (SQLModel):
 
 
 class AvatarCreate (AvatarBase):
-    pass
+    name: str = Field(sa_column=Column(Text, nullable=False))
 
 
 class AvatarUpdate (AvatarBase):
-    pass
+    name: str = Field(sa_column=Column(Text, nullable=False))
 
 
 class Avatar (AvatarBase, table=True):
@@ -28,10 +30,13 @@ class Avatar (AvatarBase, table=True):
     )
     weight_url: str | None = Field(default=None, sa_column=(Text))
     user: Optional["User"] = Relationship(back_populates="avatars")
+    chats: list["Chat"] = Relationship(
+        back_populates="chat", cascade_delete=True)
 
 
 class AvatarPublic(AvatarBase):
     "Avatar Public Interface"
+    id: uuid.UUID
     name: str
 
 

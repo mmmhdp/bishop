@@ -8,6 +8,7 @@ from app.chat.Chat import (
     Chat, ChatCreate
 )
 
+
 async def create_chat(*, session: AsyncSession, chat_create: ChatCreate) -> Chat:
     db_obj = Chat(
         avatar_id=chat_create.avatar_id
