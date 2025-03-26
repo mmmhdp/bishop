@@ -94,6 +94,26 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
       - SENTRY_DSN=${SENTRY_DSN}
 
+  ml:
+    image: '${DOCKER_IMAGE_ML?Variable not set}:${TAG-latest}'
+    restart: always
+    networks:
+      - default
+    env_file:
+      - .env
+    environment:
+      - DOMAIN=${DOMAIN}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
+      - SECRET_KEY=${SECRET_KEY?Variable not set}
+      - FIRST_SUPERUSER=${FIRST_SUPERUSER?Variable not set}
+      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD?Variable not set}
+      - SENTRY_DSN=${SENTRY_DSN}
+
+      - REDIS_HOST_PASSWORD=${REDIS_HOST_PASSWORD?Variable not set}
+      - MINIO_ROOT_USER={MINIO_ROOT_USER?Variable not set}
+      - MINIO_ROOT_PASSWORD={MINIO_ROOT_PASSWORD?Variable not set}
+
   backend:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     restart: always

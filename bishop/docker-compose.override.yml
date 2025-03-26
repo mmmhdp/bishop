@@ -67,6 +67,29 @@ services:
       - "9000:9000" # actual bucket port
       - "9001:9001" # console port
 
+  ml:
+    restart: "no"
+    ports:
+      - "11000:11000"
+    build:
+      context: ./ml
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - app.main
+    develop:
+      watch:
+        - path: ./ml
+          action: sync
+          target: /app
+          ignore:
+            - ./ml/.venv
+            - .venv
+        - path: ./ml/pyproject.toml
+          action: rebuild
+
   backend:
     restart: "no"
     ports:

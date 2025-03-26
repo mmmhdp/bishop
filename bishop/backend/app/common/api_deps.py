@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator
 from typing import Annotated
+from functools import lru_cache
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -17,6 +18,7 @@ from app.common.db import async_engine
 from app.security.models.Token import TokenPayload
 
 from app.user.User import User
+from app.broker.producer.Producer import KafkaMessageProducer
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -60,3 +62,11 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
             status_code=403, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+@lru_cache()
+def get_producer() -> KafkaMessageProducer:
+    return KafkaMessageProducer(bootstrap_servers=settings.KAFKA_BROKER_URL)
+
+
+ProducerDep = Annotated[KafkaMessageProducer, Depends(get_producer)]

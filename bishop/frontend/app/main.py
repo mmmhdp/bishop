@@ -1,5 +1,5 @@
 import asyncio
-from app.logging import logger
+from app.logging_service import logger
 from fasthtml.common import *
 from dataclasses import dataclass, asdict
 from app.config import BACKEND_URL
