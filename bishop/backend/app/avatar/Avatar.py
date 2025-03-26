@@ -31,7 +31,7 @@ class Avatar (AvatarBase, table=True):
     weight_url: str | None = Field(default=None, sa_column=(Text))
     user: Optional["User"] = Relationship(back_populates="avatars")
     chats: list["Chat"] = Relationship(
-        back_populates="chat", cascade_delete=True)
+        back_populates="avatar", cascade_delete=True)
 
 
 class AvatarPublic(AvatarBase):

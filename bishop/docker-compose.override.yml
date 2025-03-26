@@ -50,10 +50,22 @@ services:
     ports:
       - "5432:5432"
 
-  adminer:
-    restart: "no"
+  kafka:
     ports:
-      - "8080:8080"
+      - "29092:9092"
+
+  zookeeper:
+    ports:
+      - "22181:2181"
+
+  log-db:
+    ports:
+      - "6379:6379"
+
+  s3:
+    ports:
+      - "9000:9000" # actual bucket port
+      - "9001:9001" # console port
 
   backend:
     restart: "no"

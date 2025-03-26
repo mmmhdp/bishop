@@ -19,28 +19,47 @@ services:
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
       - POSTGRES_DB=${POSTGRES_DB?Variable not set}
 
-  adminer:
-    image: adminer
+  kafka:
+    image: confluentinc/cp-kafka
     restart: always
-    networks:
-      - traefik-public
-      - default
     depends_on:
-      - db
+      - zookeeper
     environment:
-      - ADMINER_DESIGN=pepa-linha-dark
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik-public
-      - traefik.constraint-label=traefik-public
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.rule=Host(`adminer.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.entrypoints=http
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.middlewares=https-redirect
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.rule=Host(`adminer.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.entrypoints=https
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.tls=true
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.tls.certresolver=le
-      - traefik.http.services.${STACK_NAME?Variable not set}-adminer.loadbalancer.server.port=8080
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      start_period: 15s
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  log-db:
+    image: redis
+    restart: always
+    command: redis-server --requirepass ${REDIS_HOST_PASSWORD?Variable not set}
+    env_file:
+      - .env
+
+  s3:
+    image: minio/minio
+    restart: always
+    command: server /data --console-address ":9001"
+    env_file:
+      - .env
+    volumes:
+      - s3-data:/data
 
   prestart:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
@@ -162,6 +181,7 @@ services:
 
 volumes:
   app-db-data:
+  s3-data:
 
 networks:
   traefik-public:
