@@ -9,7 +9,8 @@ from app.common.models.SimpleMessage import SimpleMessage
 from app.avatar import avatar_repository
 from app.common.api_deps import (
     CurrentUser,
-    SessionDep
+    SessionDep,
+    ProducerDep
 )
 from app.avatar.Avatar import (
     AvatarCreate,
@@ -18,7 +19,7 @@ from app.avatar.Avatar import (
     AvatarsPublic,
     Avatar
 )
-
+from app.avatar import avatar_broker_service
 router = APIRouter()
 
 
@@ -104,3 +105,62 @@ async def delete_avatar(
     await session.delete(avatar)
     await session.commit()
     return SimpleMessage(message="Avatar deleted successfully")
+
+
+@router.post("/{id}/train/start")
+async def start_training(
+    session: SessionDep, current_user: CurrentUser,
+    producer: ProducerDep,
+    id: uuid.UUID
+) -> SimpleMessage:
+    """
+    Trigger training for a specific avatar.
+    """
+    avatar = await session.get(Avatar, id)
+    if not avatar:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+    if not current_user.is_superuser and avatar.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    await avatar_broker_service.send_train_start_message(
+        session=session,
+        producer=producer, avatar_id=id)
+    return SimpleMessage(message=f"Training started for avatar {id}")
+
+
+@router.post("/{id}/train/stop")
+async def stop_training(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID,
+    producer: ProducerDep,
+) -> SimpleMessage:
+    """
+    Stop training for a specific avatar.
+    """
+    avatar = await session.get(Avatar, id)
+    if not avatar:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+    if not current_user.is_superuser and avatar.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    await avatar_broker_service.send_train_stop_message(
+        session=session,
+        producer=producer, avatar_id=id)
+    return SimpleMessage(message=f"Training stop requested for avatar {id}")
+
+
+@router.get("/{id}/train/status")
+async def get_training_status(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID,
+    producer: ProducerDep,
+) -> dict[str, str]:
+    """
+    Check training status for a specific avatar (mocked).
+    """
+    avatar = await session.get(Avatar, id)
+    if not avatar:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+    if not current_user.is_superuser and avatar.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    # You can later pull this from Redis or a status topic
+    return {"status": "training_not_started"}
