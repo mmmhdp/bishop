@@ -6,7 +6,7 @@ from app.common import mixin_controller
 from app.message import message_controller
 from app.chat import chat_controller
 from app.avatar import avatar_controller
-from app.train_data import train_data_controller
+from app.train_material import train_material_controller
 
 api_router = APIRouter()
 
@@ -23,7 +23,7 @@ chat_controller.router.include_router(message_controller.router,
 avatar_controller.router.include_router(chat_controller.router,
                                         prefix="/{avatar_id}/chat", tags=["chats"])
 
-avatar_controller.router.include_router(train_data_controller.router,
+avatar_controller.router.include_router(train_material_controller.router,
                                         prefix="/{avatar_id}/train", tags=["train"])
 
 api_router.include_router(

@@ -26,6 +26,7 @@ dependencies = [
     "openai-whisper>=20240930",
     "moviepy>=2.1.2",
     "confluent-kafka>=2.8.2",
+    "minio>=7.2.15",
 ]
 
 [tool.uv]

@@ -29,7 +29,9 @@ class Chat (ChatBase, table=True):
     __tablename__ = "chat"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     title: Optional[str] = Field(default="No title")
-    avatar: Optional["Avatar"] = Relationship(back_populates="chats")
+
+    avatar: "Avatar" = Relationship(back_populates="chats")
+
     messages: list["Message"] = Relationship(
         back_populates="chat", cascade_delete=True)
 

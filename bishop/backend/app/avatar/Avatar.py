@@ -5,6 +5,7 @@ from sqlalchemy.types import Text
 from typing import TYPE_CHECKING, Optional
 
 from app.chat.Chat import Chat
+from app.train_material.TrainMaterial import TrainMaterial
 
 if TYPE_CHECKING:
     from app.user.User import User
@@ -31,6 +32,8 @@ class Avatar (AvatarBase, table=True):
     weight_url: str | None = Field(default=None, sa_column=(Text))
     user: Optional["User"] = Relationship(back_populates="avatars")
     chats: list["Chat"] = Relationship(
+        back_populates="avatar", cascade_delete=True)
+    train_materials: list["TrainMaterial"] = Relationship(
         back_populates="avatar", cascade_delete=True)
 
 
