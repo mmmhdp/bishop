@@ -1,17 +1,47 @@
 import uuid
-from fastapi import UploadFile
+import os
+from io import BytesIO
+from fastapi import UploadFile, HTTPException
 from app.common.config import settings
 from app.common.db import minio_client
 from minio.error import S3Error
-from io import BytesIO
+
+# Allowed extensions grouped by type
+# ALLOWED_EXTENSIONS = {
+#    "audio": {"mp3", "wav", "m4a", "aac", "flac"},
+#    "video": {"mp4", "avi", "mov", "mkv", "webm"},
+#    "text": {"txt", "csv", "json"}
+# }
+
+ALLOWED_EXTENSIONS = {
+    "audio": {"mp3", "m4a", "ogg"},
+    "video": {"mp4"},
+    "text": {"txt", "csv", "json"}
+}
 
 
-async def upload_to_minio(file: UploadFile) -> str:
+def detect_file_type(file_ext: str) -> str:
     """
-    Uploads file to MinIO and returns the file URL.
+    Detects the high-level file type from extension.
+    Raises if unsupported.
+    """
+    for type_group, ext_list in ALLOWED_EXTENSIONS.items():
+        if file_ext.lower() in ext_list:
+            return type_group
+    raise HTTPException(
+        status_code=400, detail=f"Unsupported file extension: .{file_ext}")
+
+
+async def upload_to_minio(file: UploadFile, user_id: uuid.UUID, avatar_id: uuid.UUID) -> str:
+    """
+    Uploads file to MinIO with organized path and returns the full URL.
+    Path format: users/{user_id}/avatars/{avatar_id}/{type}/{file_id}.{ext}
     """
     file_ext = file.filename.split('.')[-1]
-    object_name = f"{uuid.uuid4()}.{file_ext}"
+    file_type = detect_file_type(file_ext)
+    file_id = uuid.uuid4()
+    object_name = f"users/{user_id}/avatars/{
+        avatar_id}/{file_type}/{file_id}.{file_ext}"
 
     try:
         file_data = await file.read()

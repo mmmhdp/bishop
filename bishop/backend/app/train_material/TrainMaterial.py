@@ -1,25 +1,19 @@
 import uuid
-from enum import Enum
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, SQLModel, Relationship, Column
-from sqlalchemy.types import Text, Boolean, Enum as SQLAlchemyEnum
+from sqlalchemy.types import Text, Boolean
 from sqlalchemy.sql import func
 
 
-class SourceType(str, Enum):
-    AUDIO = "audio"
-    VIDEO = "video"
-    TXT = "txt"
-
-
 class TrainMaterialBase(SQLModel):
+    title: str = Field(nullable=False)
     avatar_id: uuid.UUID = Field(foreign_key="avatar.id", nullable=False)
 
 
 class TrainMaterialCreate(TrainMaterialBase):
-    type: SourceType
+    pass
 
 
 if TYPE_CHECKING:
@@ -30,9 +24,8 @@ class TrainMaterial(TrainMaterialBase, table=True):
     __tablename__ = "train_material"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    type: SourceType = Field(
-        sa_column=Column(SQLAlchemyEnum(SourceType), nullable=False)
-    )
+    title: str = Field(sa_column=Column(Text, nullable=False,
+                       default=f"material_{uuid.uuid4()}"))
     url: str = Field(sa_column=Column(Text, nullable=False))
     is_trained_on: bool = Field(sa_column=Column(
         Boolean, nullable=False, default=False))
