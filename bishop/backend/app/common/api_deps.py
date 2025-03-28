@@ -13,12 +13,14 @@ from app.security import security_service
 
 from app.common.config import settings
 
-from app.common.db import async_engine
+from app.common.db import async_engine, redis_client, minio_client
 
 from app.security.models.Token import TokenPayload
 
 from app.user.User import User
 from app.broker.producer.Producer import KafkaMessageProducer
+from app.broker.consumer.Consumer import KafkaMessageConsumer
+
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -70,3 +72,12 @@ def get_producer() -> KafkaMessageProducer:
 
 
 ProducerDep = Annotated[KafkaMessageProducer, Depends(get_producer)]
+
+
+@lru_cache()
+def get_msg_generation_consumer() -> KafkaMessageConsumer:
+    return KafkaMessageConsumer(bootstrap_servers=settings.KAFKA_BROKER_URL, group_id=settings.KAFKA_GROUP_ID, topic=settings.KAFKA_TOPIC_INFERENCE)
+
+
+MessageGenerationConsumerDep = Annotated[KafkaMessageConsumer, Depends(
+    get_msg_generation_consumer)]

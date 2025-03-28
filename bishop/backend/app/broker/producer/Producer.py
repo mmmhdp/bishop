@@ -1,6 +1,7 @@
 from confluent_kafka import Producer
 import json
 from app.common.logging_service import logger
+from starlette.concurrency import run_in_threadpool
 
 
 class KafkaMessageProducer:
@@ -17,17 +18,18 @@ class KafkaMessageProducer:
             logger.info(f"Message delivered to {msg.topic()} [{
                         msg.partition()}] at offset {msg.offset()}")
 
-    def send(self, topic, data: dict):
+    async def send(self, topic, data: dict):
         try:
             message = json.dumps(data).encode('utf-8')
-            self.producer.produce(
+            kwargs = dict(
                 topic=topic,
                 value=message,
                 callback=self.delivery_report
             )
-            self.producer.poll(0)  # Serve delivery callback immediately
+            await run_in_threadpool(self.producer.produce, **kwargs)
+            await run_in_threadpool(self.producer.poll, 0)
         except Exception as e:
             logger.exception(f"Failed to send message to topic '{topic}': {e}")
 
-    def flush(self):
-        self.producer.flush()
+    async def flush(self):
+        await run_in_threadpool(self.producer.flush)

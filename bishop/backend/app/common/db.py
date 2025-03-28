@@ -1,15 +1,21 @@
-from sqlmodel import select
+from sqlmodel import select, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.user import user_repository
-
 from app.common.config import settings
-
 from app.user.User import User, UserCreate
+import app.common.models_init
 
 
 from minio import Minio
+from redis import asyncio as AsyncRedis
+
+redis_client = AsyncRedis.from_url(
+    url=settings.REDIS_URL,
+    decode_responses=True
+)
+
 
 minio_client = Minio(
     endpoint=settings.MINIO_ENDPOINT,
@@ -22,8 +28,6 @@ async_engine = create_async_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
 async def init_db(session: AsyncSession) -> None:
-    import app.common.models_init  # noqa
-    from sqlmodel import SQLModel
 
     async with async_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)

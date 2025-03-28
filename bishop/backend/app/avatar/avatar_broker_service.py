@@ -48,10 +48,10 @@ async def send_train_start_message(
     }
 
     logger.info(f"Sending START training message for avatar {avatar_id}")
-    producer.send(topic=settings.KAFKA_TOPIC_TRAIN, data=payload)
+    await producer.send(topic=settings.KAFKA_TOPIC_TRAIN, data=payload)
 
 
-def send_train_stop_message(
+async def send_train_stop_message(
     producer: KafkaMessageProducer,
     avatar_id: uuid.UUID,
     user_id: Optional[uuid.UUID] = None
@@ -67,5 +67,4 @@ def send_train_stop_message(
     }
 
     logger.info(f"Sending STOP training message for avatar {avatar_id}")
-    producer.send(topic=settings.KAFKA_TOPIC_TRAIN, data=payload)
-
+    await producer.send(topic=settings.KAFKA_TOPIC_TRAIN, data=payload)

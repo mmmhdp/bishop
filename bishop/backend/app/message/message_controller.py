@@ -3,10 +3,11 @@ from sqlmodel import select
 from typing import Any, List
 import uuid
 
-from app.common.api_deps import SessionDep, CurrentUser
+from app.common.api_deps import SessionDep, CurrentUser, ProducerDep, MessageGenerationConsumerDep
 from app.message.Message import Message, MessageCreate, MessagePublic, MessagesPublic, MessageUpdate
 from app.common.models.SimpleMessage import SimpleMessage
 from app.message import message_repository
+from app.message import message_broker_service
 from app.chat import chat_repository
 from app.avatar import avatar_repository  # if you have this
 
@@ -64,7 +65,9 @@ async def create_message(
     current_user: CurrentUser,
     avatar_id: uuid.UUID,
     chat_id: uuid.UUID,
-    item_in: MessageCreate
+    item_in: MessageCreate,
+    producer: ProducerDep,
+    consumer: MessageGenerationConsumerDep
 ) -> Any:
     """
     Create a new message in a specific chat.
@@ -79,10 +82,17 @@ async def create_message(
     session.add(message)
     await session.commit()
     await session.refresh(message)
+
+    message_broker_service.send_generate_response_message(
+        producer=producer,
+        message_id=message.id,
+        user_message=message.text
+    )
+
     return message
 
 
-@router.put("/{message_id}", response_model=MessagePublic)
+@ router.put("/{message_id}", response_model=MessagePublic)
 async def update_message(
     *,
     session: SessionDep,
@@ -111,7 +121,7 @@ async def update_message(
     return message
 
 
-@router.delete("/{message_id}")
+@ router.delete("/{message_id}")
 async def delete_message(
     *,
     session: SessionDep,

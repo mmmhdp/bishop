@@ -5,6 +5,7 @@ from fastapi import UploadFile, HTTPException
 from app.common.config import settings
 from app.common.db import minio_client
 from minio.error import S3Error
+from starlette.concurrency import run_in_threadpool
 
 # Allowed extensions grouped by type
 # ALLOWED_EXTENSIONS = {
@@ -47,13 +48,14 @@ async def upload_to_minio(file: UploadFile, user_id: uuid.UUID, avatar_id: uuid.
         file_data = await file.read()
         file_size = len(file_data)
 
-        minio_client.put_object(
+        kwargs = dict(
             bucket_name=settings.MINIO_BUCKET,
             object_name=object_name,
             data=BytesIO(file_data),
             length=file_size,
             content_type=file.content_type,
         )
+        await run_in_threadpool(minio_client.put_object, **kwargs)
     except S3Error as exc:
         raise RuntimeError(f"Failed to upload to MinIO: {exc}")
 
