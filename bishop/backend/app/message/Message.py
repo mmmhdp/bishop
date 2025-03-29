@@ -12,32 +12,29 @@ if TYPE_CHECKING:
 
 class MessageBase (SQLModel):
     id: uuid.UUID
-    text: str | None = Field(default=None, sa_column=Column(Text))
+    text: Optional[str] = Field(default=None, sa_column=Column(Text))
     is_generated: bool = Field(default=False)
-    dub_url: str | None = Field(default=None, sa_column=Column(Text))
+    dub_url: Optional[str] = Field(default=None, sa_column=Column(Text))
 
 
 class MessageCreate(SQLModel):
-    text: str | None = Field(default=None, sa_column=Column(Text))
-    is_generated: bool = Field(default=False)
-    dub_url: str | None = Field(default=None, sa_column=Column(Text))
-    chat_id: uuid.UUID = Field(
-        foreign_key="chat.id", nullable=False, ondelete="CASCADE"
-    )
+    text: Optional[str] = Field(default=None, sa_column=Column(Text))
+    is_generated: Optional[bool] = Field(default=False)
+    dub_url: Optional[str] = Field(default=None, sa_column=Column(Text))
 
 
 class MessageUpdate (SQLModel):
-    id: uuid.UUID
-    text: str | None = Field(default=None, sa_column=Column(Text))
+    text: str = Field(default=None, sa_column=Column(Text))
 
 
-class Message (MessageCreate, table=True):
+class Message(MessageCreate, table=True):
     __tablename__ = "message"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    is_generated: bool = Field(default=False, nullable=False)
-    text: str | None = Field(default=None)
-    dub_url: str | None = Field(default=None)
+
     chat: Optional["Chat"] = Relationship(back_populates="messages")
+    chat_id: uuid.UUID = Field(foreign_key="chat.id", nullable=False)
+    avatar_id: uuid.UUID = Field(foreign_key="avatar.id", nullable=False)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
 
 
 class MessagePublic (MessageBase):

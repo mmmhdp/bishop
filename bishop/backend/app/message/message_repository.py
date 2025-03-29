@@ -3,7 +3,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.message.Message import Message
 import uuid
 from fastapi import HTTPException
-from app.common.api_deps import SessionDep, CurrentUser
+from app.common.api_deps import SessionDep, CurrentUser, CacheDep, S3Dep
 
 
 async def get_messages_for_chat(
@@ -21,6 +21,14 @@ async def get_messages_for_chat(
     )
     result = await session.exec(statement)
     return result.all()
+
+
+async def get_response_id_by_msg_id(cache_db: CacheDep, message_id: uuid.UUID) -> uuid.UUID:
+    response_id = await cache_db.get(f"msg:{message_id}")
+    if response_id is None:
+        return None
+
+    return uuid.UUID(response_id)
 
 
 async def validate_chat_belongs_to_avatar(

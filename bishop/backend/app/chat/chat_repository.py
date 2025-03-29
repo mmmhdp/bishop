@@ -7,9 +7,9 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.chat.Chat import Chat, ChatCreate, ChatUpdate
 
 
-async def create_chat(*, session: AsyncSession, chat_create: ChatCreate) -> Chat:
+async def create_chat(*, session: AsyncSession, chat_create: ChatCreate, avatar_id: uuid.UUID) -> Chat:
     db_obj = Chat(
-        avatar_id=chat_create.avatar_id,
+        avatar_id=avatar_id,
         title=chat_create.title
     )
     session.add(db_obj)

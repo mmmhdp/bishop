@@ -9,7 +9,6 @@ from sqlalchemy.sql import func
 
 class TrainMaterialBase(SQLModel):
     title: str = Field(nullable=False)
-    avatar_id: uuid.UUID = Field(foreign_key="avatar.id", nullable=False)
 
 
 class TrainMaterialCreate(TrainMaterialBase):
@@ -24,9 +23,13 @@ class TrainMaterial(TrainMaterialBase, table=True):
     __tablename__ = "train_material"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    title: str = Field(sa_column=Column(Text, nullable=False,
-                       default=f"material_{uuid.uuid4()}"))
-    url: str = Field(sa_column=Column(Text, nullable=False))
+    title: Optional[str] = Field(
+        sa_column=Column(
+            Text, nullable=False,
+            default=f"material_{uuid.uuid4()}"
+        )
+    )
+    url: Optional[str] = Field(sa_column=Column(Text, nullable=False))
     is_trained_on: bool = Field(sa_column=Column(
         Boolean, nullable=False, default=False))
     created_at: datetime = Field(
@@ -40,3 +43,14 @@ class TrainMaterial(TrainMaterialBase, table=True):
         )
     )
     avatar: "Avatar" = Relationship(back_populates="train_materials")
+
+
+class TrainMaterialPublic(SQLModel):
+    id: uuid.UUID
+    title: str
+    weight_url: Optional[str] = None
+
+
+class TrainMaterialsPublic(SQLModel):
+    data: list[TrainMaterial]
+    count: int

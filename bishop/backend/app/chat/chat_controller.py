@@ -22,7 +22,9 @@ async def create_chat(
             status_code=400,
             detail="The chat with this title already exists for that avatar"
         )
-    new_chat = await chat_repository.create_chat(session=session, chat_create=chat_in)
+    new_chat = await chat_repository.create_chat(session=session,
+                                                 chat_create=chat_in,
+                                                 avatar_id=avatar_id)
     return {"chat_id": new_chat.id}
 
 
@@ -67,4 +69,3 @@ async def delete_chat(
     if not success:
         raise HTTPException(status_code=404, detail="Chat not found")
     return {"ok": True}
-

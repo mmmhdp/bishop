@@ -3,13 +3,12 @@ from datetime import datetime
 from typing import Optional
 
 from app.broker.producer.Producer import KafkaMessageProducer
-from app.broker.consumer.Consumer import KafkaMessageConsumer
 from app.common.logging_service import logger
 from app.common.config import settings
 from app.message.Message import MessageCreate
 
 
-def send_generate_response_message(
+async def send_generate_response_message(
     producer: KafkaMessageProducer,
     message_id: uuid.UUID,
     user_message: str = None
@@ -26,4 +25,4 @@ def send_generate_response_message(
     }
 
     logger.info(f"Sending generate_response message: {payload}")
-    producer.send(topic=settings.KAFKA_TOPIC_INFERENCE, data=payload)
+    await producer.send(topic=settings.KAFKA_TOPIC_INFERENCE, data=payload)

@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException
-from sqlmodel import select
-from typing import Any, List
+from typing import Any
 import uuid
-
-from app.common.api_deps import SessionDep, CurrentUser, ProducerDep, MessageGenerationConsumerDep
+from starlette.concurrency import run_in_threadpool
+from fastapi.responses import StreamingResponse
+from app.common.api_deps import SessionDep, CurrentUser, ProducerDep, CacheDep, S3Dep
+from app.common.config import settings
 from app.message.Message import Message, MessageCreate, MessagePublic, MessagesPublic, MessageUpdate
 from app.common.models.SimpleMessage import SimpleMessage
 from app.message import message_repository
 from app.message import message_broker_service
-from app.chat import chat_repository
-from app.avatar import avatar_repository  # if you have this
+from app.common.db import redis_client, minio_client
 
 router = APIRouter()
 
@@ -27,8 +27,6 @@ async def read_messages(
     """
     Retrieve messages for a specific chat.
     """
-    await avatar_repository.validate_chat_belongs_to_avatar(
-        session, avatar_id, chat_id, current_user)
 
     messages = await message_repository.get_messages_for_chat(
         session=session, chat_id=chat_id, skip=skip, limit=limit
@@ -41,20 +39,16 @@ async def read_message(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    avatar_id: uuid.UUID,
-    chat_id: uuid.UUID,
     message_id: uuid.UUID
 ) -> Any:
     """
     Get a specific message from a chat.
     """
-    await avatar_repository.validate_chat_belongs_to_avatar(
-        session, avatar_id, chat_id, current_user)
 
     message = await session.get(Message, message_id)
-    if not message or message.chat_id != chat_id:
+    if not message:
         raise HTTPException(
-            status_code=404, detail="Message not found in this chat")
+            status_code=404, detail="Message not found")
     return message
 
 
@@ -66,24 +60,25 @@ async def create_message(
     avatar_id: uuid.UUID,
     chat_id: uuid.UUID,
     item_in: MessageCreate,
-    producer: ProducerDep,
-    consumer: MessageGenerationConsumerDep
+    producer: ProducerDep
 ) -> Any:
     """
     Create a new message in a specific chat.
     """
-    await avatar_repository.validate_chat_belongs_to_avatar(
-        session, avatar_id, chat_id, current_user)
 
-    if item_in.chat_id != chat_id:
-        raise HTTPException(status_code=400, detail="Chat ID mismatch")
+    message = Message(
+        **item_in.model_dump(),
+        id=uuid.uuid4(),
+        user_id=current_user.id,
+        avatar_id=avatar_id,
+        chat_id=chat_id
+    )
 
-    message = Message.model_validate(item_in)
     session.add(message)
     await session.commit()
     await session.refresh(message)
 
-    message_broker_service.send_generate_response_message(
+    await message_broker_service.send_generate_response_message(
         producer=producer,
         message_id=message.id,
         user_message=message.text
@@ -92,26 +87,22 @@ async def create_message(
     return message
 
 
-@ router.put("/{message_id}", response_model=MessagePublic)
+@router.put("/{message_id}", response_model=MessagePublic)
 async def update_message(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    avatar_id: uuid.UUID,
-    chat_id: uuid.UUID,
     message_id: uuid.UUID,
     item_in: MessageUpdate
 ) -> Any:
     """
-    Update a message in a specific chat.
+    Update a message.
     """
-    await avatar_repository.validate_chat_belongs_to_avatar(
-        session, avatar_id, chat_id, current_user)
 
     message = await session.get(Message, message_id)
-    if not message or message.chat_id != chat_id:
+    if not message:
         raise HTTPException(
-            status_code=404, detail="Message not found in this chat")
+            status_code=404, detail="Base message for update is not found")
 
     update_dict = item_in.model_dump(exclude_unset=True)
     message.sqlmodel_update(update_dict)
@@ -121,26 +112,45 @@ async def update_message(
     return message
 
 
-@ router.delete("/{message_id}")
+@router.delete("/{message_id}")
 async def delete_message(
     *,
     session: SessionDep,
-    current_user: CurrentUser,
-    avatar_id: uuid.UUID,
-    chat_id: uuid.UUID,
     message_id: uuid.UUID
 ) -> SimpleMessage:
     """
-    Delete a message from a chat.
+    Delete a message.
     """
-    await avatar_repository.validate_chat_belongs_to_avatar(
-        session, avatar_id, chat_id, current_user)
 
     message = await session.get(Message, message_id)
-    if not message or message.chat_id != chat_id:
+    if not message:
         raise HTTPException(
-            status_code=404, detail="Message not found in this chat")
+            status_code=404, detail="Message not found")
 
     await session.delete(message)
     await session.commit()
+
     return SimpleMessage(message="Message deleted successfully")
+
+
+@router.get("/{message_id}/response/")
+async def get_avatar_response(
+    *,
+    session: SessionDep,
+    chache_db: CacheDep,
+    current_user: CurrentUser,
+    avatar_id: uuid.UUID,
+    chat_id: uuid.UUID,
+    message_id: uuid.UUID,
+) -> Message:
+
+    rsp_id = await message_repository.get_response_id_by_msg_id(chache_db, message_id)
+    if not rsp_id:
+        return HTTPException(status_code=404, detail="Response not found")
+
+    rsp_msg = await session.get(Message, message_id)
+    if not rsp_msg:
+        raise HTTPException(
+            status_code=404, detail="Response not found")
+
+    return rsp_msg

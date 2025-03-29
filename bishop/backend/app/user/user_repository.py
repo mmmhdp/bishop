@@ -1,15 +1,27 @@
 import uuid
 from typing import Any
 
-from sqlmodel import select
+from sqlmodel import select, func
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.security.security_service import get_password_hash, verify_password
 
 
 from app.user.User import (
-    User, UserCreate, UserUpdate,
+    User, UserCreate, UserUpdate, UsersPublic
 )
+
+
+async def get_users(*, session: AsyncSession, skip: int = 0, limit: int = 100) -> list[User]:
+    count_statement = select(func.count()).select_from(User)
+    count_result = await session.exec(count_statement)
+    count = count_result.one()
+
+    statement = select(User).offset(skip).limit(limit)
+    users_result = await session.exec(statement)
+    users = users_result.all()
+
+    return UsersPublic(data=users, count=count)
 
 
 async def create_user(*, session: AsyncSession, user_create: UserCreate) -> User:

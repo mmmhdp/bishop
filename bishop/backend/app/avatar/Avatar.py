@@ -7,20 +7,22 @@ from typing import TYPE_CHECKING, Optional
 from app.chat.Chat import Chat
 from app.train_material.TrainMaterial import TrainMaterial
 
-if TYPE_CHECKING:
-    from app.user.User import User
-
 
 class AvatarBase (SQLModel):
     name: str = Field(sa_column=Column(Text, nullable=False))
+    weight_url: Optional[str] = Field(default=None)
 
 
-class AvatarCreate (AvatarBase):
+class AvatarCreate (SQLModel):
     name: str = Field(sa_column=Column(Text, nullable=False))
 
 
-class AvatarUpdate (AvatarBase):
+class AvatarUpdate (SQLModel):
     name: str = Field(sa_column=Column(Text, nullable=False))
+
+
+if TYPE_CHECKING:
+    from app.user.User import User
 
 
 class Avatar (AvatarBase, table=True):
@@ -29,7 +31,7 @@ class Avatar (AvatarBase, table=True):
     user_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    weight_url: str | None = Field(default=None, sa_column=(Text))
+    weight_url: Optional[str] = Field(default=None, sa_column=(Text))
     user: Optional["User"] = Relationship(back_populates="avatars")
     chats: list["Chat"] = Relationship(
         back_populates="avatar", cascade_delete=True)
@@ -37,10 +39,8 @@ class Avatar (AvatarBase, table=True):
         back_populates="avatar", cascade_delete=True)
 
 
-class AvatarPublic(AvatarBase):
-    "Avatar Public Interface"
+class AvatarPublic(SQLModel):
     id: uuid.UUID
-    name: str
 
 
 class AvatarsPublic(SQLModel):

@@ -1,10 +1,9 @@
-from app.avatar.Avatar import Avatar
-
-from typing import TYPE_CHECKING
 import uuid
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
+
+from app.avatar.Avatar import Avatar
 
 
 class UserBase(SQLModel):
@@ -49,7 +48,6 @@ class User(UserBase, table=True):
 
 
 class UserPublic(UserBase):
-    "User Public Interface"
     id: uuid.UUID
 
 

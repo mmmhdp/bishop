@@ -2,17 +2,15 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, delete, func, select
+from sqlmodel import func, select
+
 from app.user import user_repository
-from app.avatar import avatar_controller
 
 from app.common.api_deps import (
     CurrentUser,
     SessionDep,
     get_current_active_superuser,
 )
-
-
 from app.common.config import settings
 from app.security.security_service import get_password_hash, verify_password
 from app.user.User import (
@@ -36,26 +34,28 @@ router = APIRouter()
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
-async def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
+async def read_users(
+        session: SessionDep,
+        skip: int = 0,
+        limit: int = 100
+) -> UsersPublic:
     """
     Retrieve users.
     """
-
-    count_statement = select(func.count()).select_from(User)
-    count_result = await session.exec(count_statement)
-    count = count_result.one()
-
-    statement = select(User).offset(skip).limit(limit)
-    users_result = await session.exec(statement)
-    users = users_result.all()
-
-    return UsersPublic(data=users, count=count)
+    users = await user_repository.get_users(session=session, skip=skip, limit=limit)
+    return users
 
 
 @router.post(
-    "/", dependencies=[Depends(get_current_active_superuser)], response_model=UserPublic
+    "/",
+    dependencies=[Depends(get_current_active_superuser)],
+    response_model=UserPublic
 )
-async def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
+async def create_user(
+        *,
+        session: SessionDep,
+        user_in: UserCreate
+) -> User:
     """
     Create new user.
     """
@@ -67,6 +67,7 @@ async def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
         )
 
     user = await user_repository.create_user(session=session, user_create=user_in)
+
     if settings.emails_enabled and user_in.email:
         email_data = generate_new_account_email(
             email_to=user_in.email, username=user_in.email, password=user_in.password
@@ -81,12 +82,14 @@ async def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
 
 @router.patch("/me", response_model=UserPublic)
 async def update_user_me(
-    *, session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser
-) -> Any:
+    *,
+    session: SessionDep,
+    user_in: UserUpdateMe,
+    current_user: CurrentUser
+) -> User:
     """
     Update own user.
     """
-
     if user_in.email:
         existing_user = await user_repository.get_user_by_email(
             session=session, email=user_in.email)
@@ -104,8 +107,11 @@ async def update_user_me(
 
 @router.patch("/me/password", response_model=SimpleMessage)
 async def update_password_me(
-    *, session: SessionDep, body: UpdatePassword, current_user: CurrentUser
-) -> Any:
+    *,
+    session: SessionDep,
+    body: UpdatePassword,
+    current_user: CurrentUser
+) -> SimpleMessage:
     """
     Update own password.
     """
@@ -123,7 +129,7 @@ async def update_password_me(
 
 
 @router.get("/me", response_model=UserPublic)
-async def read_user_me(current_user: CurrentUser) -> Any:
+async def read_user_me(current_user: CurrentUser) -> CurrentUser:
     """
     Get current user.
     """
@@ -131,7 +137,10 @@ async def read_user_me(current_user: CurrentUser) -> Any:
 
 
 @router.delete("/me", response_model=SimpleMessage)
-async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
+async def delete_user_me(
+        session: SessionDep,
+        current_user: CurrentUser
+) -> SimpleMessage:
     """
     Delete own user.
     """
@@ -145,7 +154,10 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
 
 
 @router.post("/signup", response_model=UserPublic)
-async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
+async def register_user(
+        session: SessionDep,
+        user_in: UserRegister
+) -> User:
     """
     Create new user without the need to be logged in.
     """
@@ -155,15 +167,19 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
             status_code=400,
             detail="The user with this email already exists in the system",
         )
+
     user_create = UserCreate.model_validate(user_in)
     user = await user_repository.create_user(session=session, user_create=user_create)
+
     return user
 
 
 @router.get("/{user_id}", response_model=UserPublic)
 async def read_user_by_id(
-    user_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
-) -> Any:
+    user_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser
+) -> User:
     """
     Get a specific user by id.
     """
@@ -192,7 +208,6 @@ async def update_user(
     """
     Update a user.
     """
-
     db_user = await session.get(User, user_id)
     if not db_user:
         raise HTTPException(
@@ -214,7 +229,10 @@ async def update_user(
 
 @router.delete("/{user_id}", dependencies=[Depends(get_current_active_superuser)])
 async def delete_user(
-    session: SessionDep, current_user: CurrentUser, user_id: uuid.UUID
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    user_id: uuid.UUID
 ) -> SimpleMessage:
     """
     Delete a user.
