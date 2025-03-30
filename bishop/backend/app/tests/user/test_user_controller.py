@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 import pytest
-import pytest_asyncio
 
 from app.user import user_repository
 from app.common.config import settings

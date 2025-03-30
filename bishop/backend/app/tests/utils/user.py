@@ -19,9 +19,10 @@ def user_authentication_headers(
     return headers
 
 
-async def create_random_user(db: AsyncSession) -> User:
+async def create_random_user(db: AsyncSession, password: str = None) -> User:
+    if not password:
+        password = random_lower_string()
     email = random_email()
-    password = random_lower_string()
     user_in = UserCreate(email=email, password=password)
     user = await user_repository.create_user(session=db, user_create=user_in)
     return user

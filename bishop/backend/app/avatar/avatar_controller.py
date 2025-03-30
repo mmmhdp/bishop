@@ -71,7 +71,7 @@ async def update_avatar(
     if not current_user.is_superuser and (avatar.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    avatar = avatar_repository.update_avatar(session, id, item_in)
+    avatar = await avatar_repository.update_avatar(session, id, item_in)
     return avatar
 
 
@@ -91,7 +91,7 @@ async def delete_avatar(
     if not current_user.is_superuser and (avatar.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    avatar_repository.delete_avatar(session, id)
+    await avatar_repository.delete_avatar(session, id)
     return SimpleMessage(message="Avatar deleted successfully")
 
 
@@ -138,7 +138,6 @@ async def stop_training(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     await avatar_broker_service.send_train_stop_message(
-        session=session,
         producer=producer,
         avatar_id=avatar_id
     )

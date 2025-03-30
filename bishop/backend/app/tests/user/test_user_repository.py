@@ -1,7 +1,6 @@
 from fastapi.encoders import jsonable_encoder
 from sqlmodel.ext.asyncio.session import AsyncSession
 import pytest
-import pytest_asyncio
 
 from app.user import user_repository
 from app.security.security_service import verify_password
