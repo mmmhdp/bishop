@@ -15,7 +15,7 @@ from app.tests.utils.utils import get_superuser_token_headers_async
 
 @pytest_asyncio.fixture(scope="session")
 async def db() -> AsyncSession:
-    async with AsyncSession(async_engine) as async_session:
+    async with AsyncSession(async_engine, expire_on_commit=False) as async_session:
         await init_db(async_session)
         yield async_session
         statement = delete(User).where(User.email != settings.FIRST_SUPERUSER)

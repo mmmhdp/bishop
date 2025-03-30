@@ -1,4 +1,4 @@
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from sqlmodel.ext.asyncio.session import AsyncSession
 import pytest
 from uuid import uuid4
@@ -6,13 +6,18 @@ from app.common.config import settings
 from app.tests.utils.avatar import create_random_avatar
 from app.tests.utils.user import create_random_user
 
+import logging
+logging.basicConfig()
+logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
 
-def test_create_avatar(
-    client: TestClient,
+
+@pytest.mark.asyncio
+async def test_create_avatar(
+    async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
 ):
     data = {"name": "Cowboy Bebop"}
-    response = client.post(
+    response = await async_client.post(
         f"{settings.API_V1_STR}/avatars/", headers=superuser_token_headers, json=data
     )
     assert response.status_code == 200
@@ -21,13 +26,13 @@ def test_create_avatar(
 
 @pytest.mark.asyncio
 async def test_update_avatar(
-    client: TestClient,
+    async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
     db: AsyncSession,
 ):
     avatar = await create_random_avatar(db)
     data = {"name": "New Avatar Name"}
-    response = client.put(
+    response = await async_client.put(
         f"{settings.API_V1_STR}/avatars/{avatar.id}", headers=superuser_token_headers, json=data
     )
     assert response.status_code == 200
@@ -37,12 +42,12 @@ async def test_update_avatar(
 
 @pytest.mark.asyncio
 async def test_delete_avatar(
-    client: TestClient,
+    async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
     db: AsyncSession,
 ):
     avatar = await create_random_avatar(db)
-    response = client.delete(
+    response = await async_client.delete(
         f"{settings.API_V1_STR}/avatars/{avatar.id}", headers=superuser_token_headers
     )
     assert response.status_code == 200
@@ -52,12 +57,12 @@ async def test_delete_avatar(
 
 @pytest.mark.asyncio
 async def test_read_user_avatars(
-    client: TestClient,
+    async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
     db: AsyncSession,
 ):
     await create_random_avatar(db)
-    response = client.get(
+    response = await async_client.get(
         f"{settings.API_V1_STR}/avatars/", headers=superuser_token_headers
     )
     assert response.status_code == 200
@@ -68,12 +73,12 @@ async def test_read_user_avatars(
 
 @pytest.mark.asyncio
 async def test_start_training_avatar(
-    client: TestClient,
+    async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
     db: AsyncSession,
 ):
     avatar = await create_random_avatar(db)
-    response = client.post(
+    response = await async_client.post(
         f"{settings.API_V1_STR}/avatars/{avatar.id}/train/start", headers=superuser_token_headers
     )
     assert response.status_code == 200
@@ -83,12 +88,12 @@ async def test_start_training_avatar(
 
 @pytest.mark.asyncio
 async def test_stop_training_avatar(
-    client: TestClient,
+    async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
     db: AsyncSession,
 ):
     avatar = await create_random_avatar(db)
-    response = client.post(
+    response = await async_client.post(
         f"{settings.API_V1_STR}/avatars/{avatar.id}/train/stop", headers=superuser_token_headers
     )
     assert response.status_code == 200
@@ -98,11 +103,11 @@ async def test_stop_training_avatar(
 
 @pytest.mark.asyncio
 async def test_avatar_not_found(
-    client: TestClient,
+    async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
 ):
     random_uuid = uuid4()
-    response = client.put(
+    response = await async_client.put(
         f"{settings.API_V1_STR}/avatars/{random_uuid}",
         headers=superuser_token_headers,
         json={"name": "Non-existent"},
@@ -112,15 +117,17 @@ async def test_avatar_not_found(
 
 @pytest.mark.asyncio
 async def test_avatar_permission_denied(
-    client: TestClient,
+    async_client: AsyncClient,
     db: AsyncSession,
 ):
     password = "password123"
     user = await create_random_user(db, password)
+    print(user)
+    print("USER IS FINE")
     avatar = await create_random_avatar(db)
 
     login_data = {"username": user.email, "password": password}
-    login_response = client.post(
+    login_response = await async_client.post(
         f"{settings.API_V1_STR}/login/access-token",
         data=login_data,
         headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -132,7 +139,7 @@ async def test_avatar_permission_denied(
     token_headers = {"Authorization": f"{
         token_info['token_type']} {token_info['access_token']}"}
 
-    response = client.delete(
+    response = await async_client.delete(
         f"{settings.API_V1_STR}/avatars/{avatar.id}", headers=token_headers
     )
     assert response.status_code in [400, 403]
