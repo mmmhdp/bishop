@@ -98,3 +98,4 @@ async def delete_avatar(
         return None
     await session.delete(avatar)
     await session.commit()
+    return True

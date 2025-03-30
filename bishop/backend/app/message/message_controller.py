@@ -1,15 +1,24 @@
-from fastapi import APIRouter, HTTPException
 from typing import Any
 import uuid
-from starlette.concurrency import run_in_threadpool
-from fastapi.responses import StreamingResponse
-from app.common.api_deps import SessionDep, CurrentUser, ProducerDep, CacheDep, S3Dep
-from app.common.config import settings
-from app.message.Message import Message, MessageCreate, MessagePublic, MessagesPublic, MessageUpdate
+
+from fastapi import APIRouter, HTTPException
+
+from app.common.api_deps import (
+    SessionDep,
+    CurrentUser,
+    ProducerDep,
+    CacheDep,
+)
+from app.message.Message import (
+    Message,
+    MessageCreate,
+    MessagePublic,
+    MessagesPublic,
+    MessageUpdate
+)
 from app.common.models.SimpleMessage import SimpleMessage
 from app.message import message_repository
 from app.message import message_broker_service
-from app.common.db import redis_client, minio_client
 
 router = APIRouter()
 
@@ -27,7 +36,6 @@ async def read_messages(
     """
     Retrieve messages for a specific chat.
     """
-
     messages = await message_repository.get_messages_for_chat(
         session=session, chat_id=chat_id, skip=skip, limit=limit
     )
@@ -44,7 +52,6 @@ async def read_message(
     """
     Get a specific message from a chat.
     """
-
     message = await session.get(Message, message_id)
     if not message:
         raise HTTPException(
@@ -65,7 +72,6 @@ async def create_message(
     """
     Create a new message in a specific chat.
     """
-
     message = Message(
         **item_in.model_dump(),
         id=uuid.uuid4(),
@@ -98,7 +104,6 @@ async def update_message(
     """
     Update a message.
     """
-
     message = await session.get(Message, message_id)
     if not message:
         raise HTTPException(
@@ -121,7 +126,6 @@ async def delete_message(
     """
     Delete a message.
     """
-
     message = await session.get(Message, message_id)
     if not message:
         raise HTTPException(
@@ -144,7 +148,9 @@ async def get_avatar_response(
     message_id: uuid.UUID,
 ) -> Message:
 
-    rsp_id = await message_repository.get_response_id_by_msg_id(chache_db, message_id)
+    rsp_id = await message_repository.get_response_id_by_msg_id(
+        chache_db, message_id
+    )
     if not rsp_id:
         return HTTPException(status_code=404, detail="Response not found")
 

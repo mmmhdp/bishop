@@ -42,6 +42,8 @@ class TrainMaterial(TrainMaterialBase, table=True):
             Text, nullable=False, server_default=func.now(), onupdate=func.now()
         )
     )
+
+    avatar_id: uuid.UUID = Field(foreign_key="avatar.id", nullable=False)
     avatar: "Avatar" = Relationship(back_populates="train_materials")
 
 

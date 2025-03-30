@@ -6,12 +6,7 @@ from sqlalchemy.types import Text
 from typing import TYPE_CHECKING, Optional
 
 
-if TYPE_CHECKING:
-    from app.chat.Chat import Chat
-
-
 class MessageBase (SQLModel):
-    id: uuid.UUID
     text: Optional[str] = Field(default=None, sa_column=Column(Text))
     is_generated: bool = Field(default=False)
     dub_url: Optional[str] = Field(default=None, sa_column=Column(Text))
@@ -27,7 +22,11 @@ class MessageUpdate (SQLModel):
     text: str = Field(default=None, sa_column=Column(Text))
 
 
-class Message(MessageCreate, table=True):
+if TYPE_CHECKING:
+    from app.chat.Chat import Chat
+
+
+class Message(MessageBase, table=True):
     __tablename__ = "message"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
@@ -38,7 +37,9 @@ class Message(MessageCreate, table=True):
 
 
 class MessagePublic (MessageBase):
-    pass
+    id: uuid.UUID
+    chat_id: uuid.UUID
+    avatar_id: uuid.UUID
 
 
 class MessagesPublic (SQLModel):

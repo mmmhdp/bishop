@@ -1,11 +1,9 @@
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from app.broker.producer.Producer import KafkaMessageProducer
 from app.common.logging_service import logger
 from app.common.config import settings
-from app.message.Message import MessageCreate
 
 
 async def send_generate_response_message(
