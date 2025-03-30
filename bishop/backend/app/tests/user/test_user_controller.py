@@ -1,7 +1,7 @@
 import uuid
 from unittest.mock import patch
 
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 import pytest
@@ -14,11 +14,12 @@ from app.user.User import User, UserCreate
 from app.tests.utils.utils import random_email, random_lower_string
 
 
-def test_get_users_superuser_me(
-    client: TestClient, superuser_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_get_users_superuser_me(
+    async_client: AsyncClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me",
-                   headers=superuser_token_headers)
+    r = await async_client.get(f"{settings.API_V1_STR}/users/me",
+                               headers=superuser_token_headers)
     current_user = r.json()
     assert current_user
     assert current_user["is_active"] is True
@@ -26,11 +27,12 @@ def test_get_users_superuser_me(
     assert current_user["email"] == settings.FIRST_SUPERUSER
 
 
-def test_get_users_normal_user_me(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_get_users_normal_user_me(
+    async_client: AsyncClient, normal_user_token_headers: dict[str, str]
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me",
-                   headers=normal_user_token_headers)
+    r = await async_client.get(f"{settings.API_V1_STR}/users/me",
+                               headers=normal_user_token_headers)
     current_user = r.json()
     assert current_user
     assert current_user["is_active"] is True
@@ -40,7 +42,7 @@ def test_get_users_normal_user_me(
 
 @pytest.mark.asyncio
 async def test_create_user_new_email(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     with (
         patch("app.email.email_service.send_email", return_value=None),
@@ -50,7 +52,7 @@ async def test_create_user_new_email(
         username = random_email()
         password = random_lower_string()
         data = {"email": username, "password": password}
-        r = client.post(
+        r = await async_client.post(
             f"{settings.API_V1_STR}/users/",
             headers=superuser_token_headers,
             json=data,
@@ -64,14 +66,14 @@ async def test_create_user_new_email(
 
 @pytest.mark.asyncio
 async def test_get_existing_user(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
     user = await user_repository.create_user(session=db, user_create=user_in)
     user_id = user.id
-    r = client.get(
+    r = await async_client.get(
         f"{settings.API_V1_STR}/users/{user_id}",
         headers=superuser_token_headers,
     )
@@ -83,7 +85,7 @@ async def test_get_existing_user(
 
 
 @pytest.mark.asyncio
-async def test_get_existing_user_current_user(client: TestClient, db: AsyncSession) -> None:
+async def test_get_existing_user_current_user(async_client: AsyncClient, db: AsyncSession) -> None:
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
@@ -94,13 +96,13 @@ async def test_get_existing_user_current_user(client: TestClient, db: AsyncSessi
         "username": username,
         "password": password,
     }
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/login/access-token", data=login_data)
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
 
-    r = client.get(
+    r = await async_client.get(
         f"{settings.API_V1_STR}/users/{user_id}",
         headers=headers,
     )
@@ -111,10 +113,11 @@ async def test_get_existing_user_current_user(client: TestClient, db: AsyncSessi
     assert existing_user.email == api_user["email"]
 
 
-def test_get_existing_user_permissions_error(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_get_existing_user_permissions_error(
+    async_client: AsyncClient, normal_user_token_headers: dict[str, str]
 ) -> None:
-    r = client.get(
+    r = await async_client.get(
         f"{settings.API_V1_STR}/users/{uuid.uuid4()}",
         headers=normal_user_token_headers,
     )
@@ -124,7 +127,7 @@ def test_get_existing_user_permissions_error(
 
 @pytest.mark.asyncio
 async def test_create_user_existing_username(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     username = random_email()
     # username = email
@@ -132,7 +135,7 @@ async def test_create_user_existing_username(
     user_in = UserCreate(email=username, password=password)
     await user_repository.create_user(session=db, user_create=user_in)
     data = {"email": username, "password": password}
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/users/",
         headers=superuser_token_headers,
         json=data,
@@ -142,13 +145,14 @@ async def test_create_user_existing_username(
     assert "_id" not in created_user
 
 
-def test_create_user_by_normal_user(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_create_user_by_normal_user(
+    async_client: AsyncClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     username = random_email()
     password = random_lower_string()
     data = {"email": username, "password": password}
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/users/",
         headers=normal_user_token_headers,
         json=data,
@@ -158,7 +162,7 @@ def test_create_user_by_normal_user(
 
 @pytest.mark.asyncio
 async def test_retrieve_users(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     username = random_email()
     password = random_lower_string()
@@ -170,8 +174,8 @@ async def test_retrieve_users(
     user_in2 = UserCreate(email=username2, password=password2)
     await user_repository.create_user(session=db, user_create=user_in2)
 
-    r = client.get(f"{settings.API_V1_STR}/users/",
-                   headers=superuser_token_headers)
+    r = await async_client.get(f"{settings.API_V1_STR}/users/",
+                               headers=superuser_token_headers)
     all_users = r.json()
 
     assert len(all_users["data"]) > 1
@@ -182,12 +186,12 @@ async def test_retrieve_users(
 
 @pytest.mark.asyncio
 async def test_update_user_me(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, normal_user_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     full_name = "Updated Name"
     email = random_email()
     data = {"full_name": full_name, "email": email}
-    r = client.patch(
+    r = await async_client.patch(
         f"{settings.API_V1_STR}/users/me",
         headers=normal_user_token_headers,
         json=data,
@@ -207,14 +211,14 @@ async def test_update_user_me(
 
 @pytest.mark.asyncio
 async def test_update_password_me(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     new_password = random_lower_string()
     data = {
         "current_password": settings.FIRST_SUPERUSER_PASSWORD,
         "new_password": new_password,
     }
-    r = client.patch(
+    r = await async_client.patch(
         f"{settings.API_V1_STR}/users/me/password",
         headers=superuser_token_headers,
         json=data,
@@ -235,7 +239,7 @@ async def test_update_password_me(
         "current_password": new_password,
         "new_password": settings.FIRST_SUPERUSER_PASSWORD,
     }
-    r = client.patch(
+    r = await async_client.patch(
         f"{settings.API_V1_STR}/users/me/password",
         headers=superuser_token_headers,
         json=old_data,
@@ -247,12 +251,13 @@ async def test_update_password_me(
         settings.FIRST_SUPERUSER_PASSWORD, user_db.hashed_password)
 
 
-def test_update_password_me_incorrect_password(
-    client: TestClient, superuser_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_update_password_me_incorrect_password(
+    async_client: AsyncClient, superuser_token_headers: dict[str, str]
 ) -> None:
     new_password = random_lower_string()
     data = {"current_password": new_password, "new_password": new_password}
-    r = client.patch(
+    r = await async_client.patch(
         f"{settings.API_V1_STR}/users/me/password",
         headers=superuser_token_headers,
         json=data,
@@ -264,7 +269,7 @@ def test_update_password_me_incorrect_password(
 
 @pytest.mark.asyncio
 async def test_update_user_me_email_exists(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, normal_user_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     username = random_email()
     password = random_lower_string()
@@ -272,7 +277,7 @@ async def test_update_user_me_email_exists(
     user = await user_repository.create_user(session=db, user_create=user_in)
 
     data = {"email": user.email}
-    r = client.patch(
+    r = await async_client.patch(
         f"{settings.API_V1_STR}/users/me",
         headers=normal_user_token_headers,
         json=data,
@@ -281,14 +286,15 @@ async def test_update_user_me_email_exists(
     assert r.json()["detail"] == "User with this email already exists"
 
 
-def test_update_password_me_same_password_error(
-    client: TestClient, superuser_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_update_password_me_same_password_error(
+    async_client: AsyncClient, superuser_token_headers: dict[str, str]
 ) -> None:
     data = {
         "current_password": settings.FIRST_SUPERUSER_PASSWORD,
         "new_password": settings.FIRST_SUPERUSER_PASSWORD,
     }
-    r = client.patch(
+    r = await async_client.patch(
         f"{settings.API_V1_STR}/users/me/password",
         headers=superuser_token_headers,
         json=data,
@@ -301,12 +307,12 @@ def test_update_password_me_same_password_error(
 
 
 @pytest.mark.asyncio
-async def test_register_user(client: TestClient, db: AsyncSession) -> None:
+async def test_register_user(async_client: AsyncClient, db: AsyncSession) -> None:
     username = random_email()
     password = random_lower_string()
     full_name = random_lower_string()
     data = {"email": username, "password": password, "full_name": full_name}
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/users/signup",
         json=data,
     )
@@ -324,7 +330,8 @@ async def test_register_user(client: TestClient, db: AsyncSession) -> None:
     assert verify_password(password, user_db.hashed_password)
 
 
-def test_register_user_already_exists_error(client: TestClient) -> None:
+@pytest.mark.asyncio
+async def test_register_user_already_exists_error(async_client: AsyncClient) -> None:
     password = random_lower_string()
     full_name = random_lower_string()
     data = {
@@ -332,7 +339,7 @@ def test_register_user_already_exists_error(client: TestClient) -> None:
         "password": password,
         "full_name": full_name,
     }
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/users/signup",
         json=data,
     )
@@ -343,7 +350,7 @@ def test_register_user_already_exists_error(client: TestClient) -> None:
 
 @pytest.mark.asyncio
 async def test_update_user(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     username = random_email()
     password = random_lower_string()
@@ -351,7 +358,7 @@ async def test_update_user(
     user = await user_repository.create_user(session=db, user_create=user_in)
 
     data = {"full_name": "Updated_full_name"}
-    r = client.patch(
+    r = await async_client.patch(
         f"{settings.API_V1_STR}/users/{user.id}",
         headers=superuser_token_headers,
         json=data,
@@ -369,11 +376,12 @@ async def test_update_user(
     assert user_db.full_name == "Updated_full_name"
 
 
-def test_update_user_not_exists(
-    client: TestClient, superuser_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_update_user_not_exists(
+    async_client: AsyncClient, superuser_token_headers: dict[str, str]
 ) -> None:
     data = {"full_name": "Updated_full_name"}
-    r = client.patch(
+    r = await async_client.patch(
         f"{settings.API_V1_STR}/users/{uuid.uuid4()}",
         headers=superuser_token_headers,
         json=data,
@@ -385,7 +393,7 @@ def test_update_user_not_exists(
 
 @pytest.mark.asyncio
 async def test_update_user_email_exists(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     username = random_email()
     password = random_lower_string()
@@ -399,7 +407,7 @@ async def test_update_user_email_exists(
     user2 = await user_repository.create_user(session=db, user_create=user_in2)
 
     data = {"email": user2.email}
-    r = client.patch(
+    r = await async_client.patch(
         # pretty strange? yes, it's python
         f"{settings.API_V1_STR}/users/{big_id}",
         headers=superuser_token_headers,
@@ -410,7 +418,7 @@ async def test_update_user_email_exists(
 
 
 @pytest.mark.asyncio
-async def test_delete_user_me(client: TestClient, db: AsyncSession) -> None:
+async def test_delete_user_me(async_client: AsyncClient, db: AsyncSession) -> None:
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
@@ -421,13 +429,13 @@ async def test_delete_user_me(client: TestClient, db: AsyncSession) -> None:
         "username": username,
         "password": password,
     }
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/login/access-token", data=login_data)
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
 
-    r = client.delete(
+    r = await async_client.delete(
         f"{settings.API_V1_STR}/users/me",
         headers=headers,
     )
@@ -444,10 +452,11 @@ async def test_delete_user_me(client: TestClient, db: AsyncSession) -> None:
     assert user_db is None
 
 
-def test_delete_user_me_as_superuser(
-    client: TestClient, superuser_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_delete_user_me_as_superuser(
+    async_client: AsyncClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    r = client.delete(
+    r = await async_client.delete(
         f"{settings.API_V1_STR}/users/me",
         headers=superuser_token_headers,
     )
@@ -458,14 +467,14 @@ def test_delete_user_me_as_superuser(
 
 @pytest.mark.asyncio
 async def test_delete_user_super_user(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
     user = await user_repository.create_user(session=db, user_create=user_in)
     user_id = user.id
-    r = client.delete(
+    r = await async_client.delete(
         f"{settings.API_V1_STR}/users/{user_id}",
         headers=superuser_token_headers,
     )
@@ -477,10 +486,11 @@ async def test_delete_user_super_user(
     assert result is None
 
 
-def test_delete_user_not_found(
-    client: TestClient, superuser_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_delete_user_not_found(
+    async_client: AsyncClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    r = client.delete(
+    r = await async_client.delete(
         f"{settings.API_V1_STR}/users/{uuid.uuid4()}",
         headers=superuser_token_headers,
     )
@@ -490,13 +500,13 @@ def test_delete_user_not_found(
 
 @pytest.mark.asyncio
 async def test_delete_user_current_super_user_error(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     super_user = await user_repository.get_user_by_email(session=db, email=settings.FIRST_SUPERUSER)
     assert super_user
     user_id = super_user.id
 
-    r = client.delete(
+    r = await async_client.delete(
         f"{settings.API_V1_STR}/users/{user_id}",
         headers=superuser_token_headers,
     )
@@ -507,14 +517,14 @@ async def test_delete_user_current_super_user_error(
 
 @pytest.mark.asyncio
 async def test_delete_user_without_privileges(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, normal_user_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
     user = await user_repository.create_user(session=db, user_create=user_in)
 
-    r = client.delete(
+    r = await async_client.delete(
         f"{settings.API_V1_STR}/users/{user.id}",
         headers=normal_user_token_headers,
     )
