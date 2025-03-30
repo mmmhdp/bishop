@@ -1,4 +1,3 @@
-import asyncio
 from app.logging_service import logger
 from fasthtml.common import *
 from dataclasses import dataclass, asdict
@@ -274,7 +273,7 @@ async def fetch_avatars(sess):
 
     headers = {"Authorization": f"{token_type} {token}"}
     async with httpx.AsyncClient(headers=headers) as client:
-        response = await client.get(f"{BACKEND_URL}/avatar/")
+        response = await client.get(f"{BACKEND_URL}/avatars/")
         return response.json().get("data", []) if "data" in response.json() else []
 
 
