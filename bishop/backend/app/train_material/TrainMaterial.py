@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, SQLModel, Relationship, Column
+from sqlmodel import Field, SQLModel, Relationship, Column, ForeignKey
 from sqlalchemy.types import Text, Boolean
 from sqlalchemy.sql import func
 
@@ -43,7 +43,10 @@ class TrainMaterial(TrainMaterialBase, table=True):
         )
     )
 
-    avatar_id: uuid.UUID = Field(foreign_key="avatar.id", nullable=False)
+    avatar_id: uuid.UUID = Field(
+        sa_column=Column(ForeignKey(
+            "avatar.id", ondelete="CASCADE"), nullable=False)
+    )
     avatar: "Avatar" = Relationship(back_populates="train_materials")
 
 

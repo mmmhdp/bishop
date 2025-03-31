@@ -115,13 +115,14 @@ class Settings(BaseSettings):
     # Redis Configuration
     REDIS_HOST: str
     REDIS_PORT: int = 6379
-    REDIS_PASSWORD: str | None = None
+    REDIS_HOST_PASSWORD: str | None = None
     REDIS_DB: int = 0
 
     @computed_field
     @property
     def REDIS_URL(self) -> str:
-        auth_part = f":{self.REDIS_PASSWORD}@" if self.REDIS_PASSWORD else ""
+        auth_part = f":{
+            self.REDIS_HOST_PASSWORD}@" if self.REDIS_HOST_PASSWORD else ""
         return f"redis://{auth_part}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:

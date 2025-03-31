@@ -24,14 +24,14 @@ async def db() -> AsyncSession:
         await init_db(async_session)
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture
 async def async_client() -> AsyncClient:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
         yield ac
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture
 async def superuser_token_headers(async_client: AsyncClient) -> dict[str, str]:
     return await get_superuser_token_headers_async(async_client)
 

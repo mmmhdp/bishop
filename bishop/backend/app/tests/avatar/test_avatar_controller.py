@@ -6,10 +6,6 @@ from app.common.config import settings
 from app.tests.utils.avatar import create_random_avatar
 from app.tests.utils.user import create_random_user
 
-import logging
-logging.basicConfig()
-logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
-
 
 @pytest.mark.asyncio
 async def test_create_avatar(

@@ -1,10 +1,9 @@
 from unittest.mock import patch
 
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 import pytest
-import pytest_asyncio
 
 from app.common.config import settings
 from app.security.security_service import verify_password
@@ -12,12 +11,13 @@ from app.user.User import User
 from app.security.security_service import generate_password_reset_token
 
 
-def test_get_access_token(client: TestClient) -> None:
+@pytest.mark.asyncio
+async def test_get_access_token(async_client: AsyncClient) -> None:
     login_data = {
         "username": settings.FIRST_SUPERUSER,
         "password": settings.FIRST_SUPERUSER_PASSWORD,
     }
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/login/access-token", data=login_data)
     tokens = r.json()
     assert r.status_code == 200
@@ -25,20 +25,22 @@ def test_get_access_token(client: TestClient) -> None:
     assert tokens["access_token"]
 
 
-def test_get_access_token_incorrect_password(client: TestClient) -> None:
+@pytest.mark.asyncio
+async def test_get_access_token_incorrect_password(async_client: AsyncClient) -> None:
     login_data = {
         "username": settings.FIRST_SUPERUSER,
         "password": "incorrect",
     }
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/login/access-token", data=login_data)
     assert r.status_code == 400
 
 
-def test_use_access_token(
-    client: TestClient, superuser_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_use_access_token(
+    async_client: AsyncClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/login/test-token",
         headers=superuser_token_headers,
     )
@@ -47,15 +49,16 @@ def test_use_access_token(
     assert "email" in result
 
 
-def test_recovery_password(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_recovery_password(
+    async_client: AsyncClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     with (
         patch("app.common.config.settings.SMTP_HOST", "smtp.example.com"),
         patch("app.common.config.settings.SMTP_USER", "admin@example.com"),
     ):
         email = "test@example.com"
-        r = client.post(
+        r = await async_client.post(
             f"{settings.API_V1_STR}/password-recovery/{email}",
             headers=normal_user_token_headers,
         )
@@ -63,11 +66,12 @@ def test_recovery_password(
         assert r.json() == {"message": "Password recovery email sent"}
 
 
-def test_recovery_password_user_not_exits(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_recovery_password_user_not_exits(
+    async_client: AsyncClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     email = "jVgQr@example.com"
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/password-recovery/{email}",
         headers=normal_user_token_headers,
     )
@@ -76,11 +80,11 @@ def test_recovery_password_user_not_exits(
 
 @pytest.mark.asyncio
 async def test_reset_password(
-    client: TestClient, superuser_token_headers: dict[str, str], db: AsyncSession
+    async_client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     token = generate_password_reset_token(email=settings.FIRST_SUPERUSER)
     data = {"new_password": "changethis", "token": token}
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/reset-password/",
         headers=superuser_token_headers,
         json=data,
@@ -95,11 +99,12 @@ async def test_reset_password(
     assert verify_password(data["new_password"], user.hashed_password)
 
 
-def test_reset_password_invalid_token(
-    client: TestClient, superuser_token_headers: dict[str, str]
+@pytest.mark.asyncio
+async def test_reset_password_invalid_token(
+    async_client: AsyncClient, superuser_token_headers: dict[str, str]
 ) -> None:
     data = {"new_password": "changethis", "token": "invalid"}
-    r = client.post(
+    r = await async_client.post(
         f"{settings.API_V1_STR}/reset-password/",
         headers=superuser_token_headers,
         json=data,

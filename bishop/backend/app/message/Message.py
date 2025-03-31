@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Field, SQLModel, Column, Relationship
+from sqlmodel import Field, SQLModel, Column, Relationship, ForeignKey
 from sqlalchemy.types import Text
 
 from typing import TYPE_CHECKING, Optional
@@ -30,10 +30,19 @@ class Message(MessageBase, table=True):
     __tablename__ = "message"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
-    chat: Optional["Chat"] = Relationship(back_populates="messages")
-    chat_id: uuid.UUID = Field(foreign_key="chat.id", nullable=False)
-    avatar_id: uuid.UUID = Field(foreign_key="avatar.id", nullable=False)
-    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    chat: "Chat" = Relationship(back_populates="messages")
+    chat_id: uuid.UUID = Field(
+        sa_column=Column(ForeignKey(
+            "chat.id", ondelete="CASCADE"), nullable=False)
+    )
+    avatar_id: uuid.UUID = Field(
+        sa_column=Column(ForeignKey(
+            "avatar.id", ondelete="CASCADE"), nullable=False)
+    )
+    user_id: uuid.UUID = Field(
+        sa_column=Column(ForeignKey(
+            "user.id", ondelete="CASCADE"), nullable=False)
+    )
 
 
 class MessagePublic (MessageBase):

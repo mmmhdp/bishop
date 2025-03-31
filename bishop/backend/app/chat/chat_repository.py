@@ -63,7 +63,7 @@ async def update_chat(
     db_chat = await session.get(Chat, chat_id)
     if not db_chat:
         return None
-    for key, value in chat_update.dict(exclude_unset=True).items():
+    for key, value in chat_update.model_dump(exclude_unset=True).items():
         setattr(db_chat, key, value)
     session.add(db_chat)
     await session.commit()

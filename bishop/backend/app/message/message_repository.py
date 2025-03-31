@@ -1,9 +1,9 @@
 import uuid
 
 from sqlmodel import select
-from app.message.Message import Message, MessagesPublic
+from app.message.Message import Message, MessagesPublic, MessageCreate
 
-from app.common.api_deps import SessionDep, CacheDep
+from app.common.api_deps import SessionDep, CacheDep, CurrentUser
 
 
 async def get_messages_for_chat(
@@ -32,3 +32,25 @@ async def get_response_id_by_msg_id(
         return None
 
     return uuid.UUID(response_id)
+
+
+async def create_message(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    avatar_id: uuid.UUID,
+    chat_id: uuid.UUID,
+    item_in: MessageCreate,
+) -> Message:
+    message = Message(
+        **item_in.model_dump(),
+        id=uuid.uuid4(),
+        user_id=current_user.id,
+        avatar_id=avatar_id,
+        chat_id=chat_id
+    )
+
+    session.add(message)
+    await session.commit()
+    await session.refresh(message)
+    return message

@@ -72,17 +72,13 @@ async def create_message(
     """
     Create a new message in a specific chat.
     """
-    message = Message(
-        **item_in.model_dump(),
-        id=uuid.uuid4(),
-        user_id=current_user.id,
+    message = await message_repository.create_message(
+        session=session,
+        current_user=current_user,
         avatar_id=avatar_id,
-        chat_id=chat_id
+        chat_id=chat_id,
+        item_in=item_in
     )
-
-    session.add(message)
-    await session.commit()
-    await session.refresh(message)
 
     await message_broker_service.send_generate_response_message(
         producer=producer,
@@ -152,7 +148,7 @@ async def get_avatar_response(
         chache_db, message_id
     )
     if not rsp_id:
-        return HTTPException(status_code=404, detail="Response not found")
+        raise HTTPException(status_code=404, detail="Response not found")
 
     rsp_msg = await session.get(Message, message_id)
     if not rsp_msg:

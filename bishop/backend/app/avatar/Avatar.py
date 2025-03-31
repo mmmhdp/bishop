@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Field, Relationship, SQLModel, Column
+from sqlmodel import Field, Relationship, SQLModel, Column, ForeignKey
 from sqlalchemy.types import Text
 from typing import TYPE_CHECKING, Optional
 
@@ -28,8 +28,10 @@ if TYPE_CHECKING:
 class Avatar (AvatarBase, table=True):
     __tablename__ = "avatar"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+
     user_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+        sa_column=Column(ForeignKey(
+            "user.id", ondelete="CASCADE"), nullable=False)
     )
     weight_url: Optional[str] = Field(default=None, sa_column=(Text))
     user: Optional["User"] = Relationship(back_populates="avatars")

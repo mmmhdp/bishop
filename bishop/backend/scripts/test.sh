@@ -3,8 +3,8 @@
 set -e
 set -x
 
-#coverage run --source=app -m pytest
-#coverage run --source=app/tests/user -m pytest app/tests/user -x
-coverage run --source=app/tests/avatar -m pytest app/tests/avatar -x
+rm -rf .pytest_cache
+coverage run --source=app -m pytest app/tests -x
+
 coverage report --show-missing
 coverage html --title "${@-coverage}"
