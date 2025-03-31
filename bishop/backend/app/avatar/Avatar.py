@@ -41,6 +41,8 @@ class Avatar (AvatarBase, table=True):
 
 class AvatarPublic(SQLModel):
     id: uuid.UUID
+    name: str
+    weight_url: Optional[str] = None
 
 
 class AvatarsPublic(SQLModel):

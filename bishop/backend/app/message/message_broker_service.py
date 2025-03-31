@@ -17,7 +17,6 @@ async def send_generate_response_message(
     """
     payload = {
         "event": "inference_response",
-        "timestamp": datetime.utcnow().isoformat(),
         "message_id": str(message_id),
         "user_message": user_message
     }

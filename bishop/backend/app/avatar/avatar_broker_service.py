@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 
 from sqlmodel import select
 
@@ -39,7 +38,6 @@ async def send_train_start_message(
     payload = {
         "event": "train_start",
         "avatar_id": str(avatar_id),
-        "timestamp": datetime.utcnow().isoformat(),
         "train_materials": materials_data,
     }
 
@@ -57,7 +55,6 @@ async def send_train_stop_message(
     payload = {
         "event": "train_stop",
         "avatar_id": str(avatar_id),
-        "timestamp": datetime.utcnow().isoformat(),
     }
 
     logger.info(f"Sending STOP training message for avatar {avatar_id}")

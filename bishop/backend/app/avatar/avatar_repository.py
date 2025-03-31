@@ -1,8 +1,6 @@
 import uuid
 
-from fastapi import HTTPException, status
 from sqlmodel import select, func
-from sqlmodel.ext.asyncio.session import AsyncSession
 
 
 from app.user.User import User
@@ -13,12 +11,11 @@ from app.avatar.Avatar import (
 from app.common.api_deps import (
     CurrentUser,
     SessionDep,
-    ProducerDep,
 )
 
 
 async def create_avatar(
-        *, session: AsyncSession,
+        *, session: SessionDep,
         avatar_create: AvatarCreate,
         user: User
 ) -> Avatar:
@@ -34,7 +31,7 @@ async def create_avatar(
 
 
 async def read_current_user_avatars(
-    session: AsyncSession,
+    session: SessionDep,
     current_user: CurrentUser,
     skip: int,
     limit: int,
@@ -57,7 +54,7 @@ async def read_current_user_avatars(
 
 
 async def read_avatar_by_id(
-        session: AsyncSession,
+        session: SessionDep,
         avatar_id: uuid.UUID
 ) -> Avatar:
     result = await session.exec(select(Avatar).where(Avatar.id == avatar_id))
@@ -68,7 +65,7 @@ async def read_avatar_by_id(
 
 
 async def read_avatars_for_user(
-        session: AsyncSession,
+        session: SessionDep,
         user_id: uuid.UUID
 ) -> AvatarsPublic:
     result = await session.exec(select(Avatar).where(Avatar.user_id == user_id))
@@ -76,7 +73,7 @@ async def read_avatars_for_user(
 
 
 async def update_avatar(
-        session: AsyncSession,
+        session: SessionDep,
         avatar_id: uuid.UUID,
         avatar_update: AvatarUpdate
 ) -> Avatar:
@@ -90,7 +87,7 @@ async def update_avatar(
 
 
 async def delete_avatar(
-        session: AsyncSession,
+        session: SessionDep,
         avatar_id: uuid.UUID
 ) -> None:
     avatar = await read_avatar_by_id(session, avatar_id)
