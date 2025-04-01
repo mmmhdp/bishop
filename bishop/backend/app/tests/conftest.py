@@ -5,6 +5,8 @@ from httpx._transports.asgi import ASGITransport
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import delete
 
+from redis import asyncio as AsyncRedis
+
 from app.common.db import async_engine, init_db
 from app.user.User import User
 from app.main import app
@@ -29,6 +31,16 @@ async def async_client() -> AsyncClient:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
         yield ac
+
+
+@pytest_asyncio.fixture
+async def cache_client() -> AsyncRedis:
+    client = AsyncRedis.from_url(
+        url=settings.REDIS_URL,
+        decode_responses=True
+    )
+    yield client
+    await client.close()
 
 
 @pytest_asyncio.fixture

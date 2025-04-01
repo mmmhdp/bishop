@@ -16,7 +16,7 @@ async def test_create_message(async_client: AsyncClient, superuser_token_headers
     chat_id = str(chat.id)
     data = {
         "title": random_lower_string(),
-        "text": "Hello AI!"
+        "text": "Ping"
     }
     response = await async_client.post(
         f"{settings.API_V1_STR}/avatars/{avatar_id}/chat/{chat_id}/msgs/",
@@ -106,4 +106,3 @@ async def test_get_response_for_message_not_found(async_client: AsyncClient, sup
         headers=superuser_token_headers,
     )
     assert response.status_code == 404
-
