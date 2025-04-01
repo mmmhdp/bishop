@@ -1,4 +1,6 @@
 # tests/conftest.py
+from minio import Minio
+import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 from httpx._transports.asgi import ASGITransport
@@ -41,6 +43,21 @@ async def cache_client() -> AsyncRedis:
     )
     yield client
     await client.close()
+
+
+@pytest.fixture
+def s3_client() -> Minio:
+    client = Minio(
+        endpoint=settings.MINIO_ENDPOINT,
+        access_key=settings.MINIO_ACCESS_KEY,
+        secret_key=settings.MINIO_SECRET_KEY,
+        secure=settings.MINIO_USE_SSL,
+    )
+
+    if not client.bucket_exists(settings.MINIO_BUCKET):
+        client.make_bucket(settings.MINIO_BUCKET)
+
+    return client
 
 
 @pytest_asyncio.fixture
