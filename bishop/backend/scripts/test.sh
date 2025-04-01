@@ -4,8 +4,8 @@ set -e
 set -x
 
 rm -rf .pytest_cache
-#coverage run --source=app -m pytest app/tests app/tests/login/login_controller.py -x
-coverage run --source=app -m pytest app/tests/message/test_message_repository.py -x
+coverage run --source=app -m pytest app/tests app/tests/login/login_controller.py -x
+#coverage run --source=app -m pytest app/tests/train_material/test_train_material_repository.py -x -p no:warnings
 
 coverage report --show-missing
 coverage html --title "${@-coverage}"
