@@ -32,6 +32,8 @@ async def test_email(email_to: EmailStr) -> SimpleMessage:
 @router.get("/health-check/")
 async def health_check(producer: ProducerDep) -> bool:
     await producer.send(
-        topic="health-check", data={"status": "ok"})
+        topic="health-check-llm", data={"status": "ok"})
+    await producer.send(
+        topic="health-check-sound", data={"status": "ok"})
     await producer.flush()
     return True
