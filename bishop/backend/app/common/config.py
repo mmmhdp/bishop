@@ -96,8 +96,10 @@ class Settings(BaseSettings):
     # Kafka Configuration
     KAFKA_BROKER_URL: str
     KAFKA_GROUP_ID: str = "api"
-    KAFKA_TOPIC_INFERENCE: str = "inference"
-    KAFKA_TOPIC_TRAIN: str = "train"
+    KAFKA_TOPIC_LLM_INFERENCE: str = "llm-inference"
+    KAFKA_TOPIC_LLM_TRAIN: str = "llm-train"
+    KAFKA_TOPIC_SOUND_INFERENCE: str = "sound-inference"
+    KAFKA_TOPIC_SOUND_TRAIN: str = "sound-train"
 
     # MinIO Configuration
     MINIO_ENDPOINT: str

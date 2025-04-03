@@ -1,4 +1,3 @@
-# tests/conftest.py
 from minio import Minio
 import pytest
 import pytest_asyncio
@@ -17,7 +16,7 @@ from app.tests.utils.user import authentication_token_from_email
 from app.tests.utils.utils import get_superuser_token_headers_async
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def db() -> AsyncSession:
     async with AsyncSession(async_engine, expire_on_commit=False) as async_session:
         await init_db(async_session)
@@ -28,24 +27,25 @@ async def db() -> AsyncSession:
         await init_db(async_session)
 
 
-@pytest_asyncio.fixture
-async def async_client() -> AsyncClient:
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
-        yield ac
-
-
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function")
 async def cache_client() -> AsyncRedis:
     client = AsyncRedis.from_url(
         url=settings.REDIS_URL,
         decode_responses=True
     )
     yield client
-    await client.close()
+    await client.aclose()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(scope="function")
+async def async_client() -> AsyncClient:
+    transport = ASGITransport(app=app)
+
+    async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
+        yield ac
+
+
+@pytest.fixture(scope="function")
 def s3_client() -> Minio:
     client = Minio(
         endpoint=settings.MINIO_ENDPOINT,
@@ -60,7 +60,7 @@ def s3_client() -> Minio:
     return client
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function")
 async def superuser_token_headers(async_client: AsyncClient) -> dict[str, str]:
     return await get_superuser_token_headers_async(async_client)
 

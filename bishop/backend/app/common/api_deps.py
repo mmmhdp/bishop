@@ -1,6 +1,5 @@
 from collections.abc import AsyncGenerator
 from typing import Annotated
-from functools import lru_cache
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -9,13 +8,13 @@ from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from redis import asyncio as AsyncRedis
 from app.security import security_service
 
 from app.common.config import settings
 
 from app.common.db import (
-    async_engine, redis_client, minio_client,
-    AsyncRedis, Minio
+    async_engine, minio_client, Minio
 )
 
 from app.security.models.Token import TokenPayload
@@ -80,8 +79,11 @@ async def get_s3_client() -> Minio:
 S3Dep = Annotated[Minio, Depends(get_s3_client)]
 
 
-async def get_redis_client() -> AsyncRedis:
-    return redis_client
+async def get_redis_client() -> AsyncRedis.Redis:
+    client = AsyncRedis.from_url(settings.REDIS_URL, decode_responses=True)
+    try:
+        yield client
+    finally:
+        await client.aclose()
 
-
-CacheDep = Annotated[AsyncRedis, Depends(get_redis_client)]
+CacheDep = Annotated[AsyncRedis.Redis, Depends(get_redis_client)]

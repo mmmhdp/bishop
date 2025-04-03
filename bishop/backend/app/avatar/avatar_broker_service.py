@@ -7,6 +7,11 @@ from app.common.logging_service import logger
 from app.common.config import settings
 from app.common.api_deps import SessionDep, ProducerDep
 
+EVENTS = {
+    "train_start": "train_start",
+    "train_stop": "train_stop",
+}
+
 
 async def send_train_start_message(
     session: SessionDep,
@@ -20,6 +25,7 @@ async def send_train_start_message(
         TrainMaterial.avatar_id == avatar_id,
         TrainMaterial.is_trained_on is False
     )
+
     result = await session.exec(statement)
     untrained_materials = result.all()
 
@@ -29,20 +35,20 @@ async def send_train_start_message(
     materials_data = [
         {
             "id": str(material.id),
-            "title": material.title,
+            "type": material.type,
             "url": material.url
         }
         for material in untrained_materials
     ]
 
     payload = {
-        "event": "train_start",
+        "event": EVENTS["train_start"],
         "avatar_id": str(avatar_id),
         "train_materials": materials_data,
     }
 
     logger.info(f"Sending START training message for avatar {avatar_id}")
-    await producer.send(topic=settings.KAFKA_TOPIC_TRAIN, data=payload)
+    await producer.send(topic=settings.KAFKA_TOPIC_LLM_TRAIN, data=payload)
 
 
 async def send_train_stop_message(
@@ -53,9 +59,9 @@ async def send_train_stop_message(
     Sends a 'train_stop' message for the avatar.
     """
     payload = {
-        "event": "train_stop",
+        "event": EVENTS["train_stop"],
         "avatar_id": str(avatar_id),
     }
 
     logger.info(f"Sending STOP training message for avatar {avatar_id}")
-    await producer.send(topic=settings.KAFKA_TOPIC_TRAIN, data=payload)
+    await producer.send(topic=settings.KAFKA_TOPIC_LLM_TRAIN, data=payload)

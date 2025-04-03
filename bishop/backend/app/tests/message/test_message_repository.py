@@ -93,9 +93,8 @@ async def test_get_response_id_by_msg_id_not_found(cache_client: AsyncRedis):
 async def test_get_response_id_by_msg_id_found(cache_client: AsyncRedis):
     message_id = uuid.uuid4()
     response_id = uuid.uuid4()
-    key = f"msg:{message_id}"
 
-    await cache_client.set(key, str(response_id))
+    await cache_client.set(str(message_id), str(response_id))
 
     result = await message_repository.get_response_id_by_msg_id(
         cache_db=cache_client,
@@ -105,4 +104,4 @@ async def test_get_response_id_by_msg_id_found(cache_client: AsyncRedis):
     assert isinstance(result, uuid.UUID)
     assert result == response_id
 
-    await cache_client.delete(key)
+    await cache_client.delete(str(message_id))

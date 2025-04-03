@@ -27,11 +27,8 @@ async def get_response_id_by_msg_id(
     cache_db: CacheDep,
     message_id: uuid.UUID
 ) -> uuid.UUID:
-    response_id = await cache_db.get(f"msg:{message_id}")
-    if response_id is None:
-        return None
-
-    return uuid.UUID(response_id)
+    response_id = await cache_db.get(str(message_id))
+    return uuid.UUID(response_id) if response_id else None
 
 
 async def create_message(

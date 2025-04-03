@@ -20,9 +20,12 @@ class Settings(BaseSettings):
 
     # Kafka Configuration
     KAFKA_BROKER_URL: str
-    KAFKA_GROUP_ID: str = "llm"
-    KAFKA_TOPIC_INFERENCE: str = "inference"
-    KAFKA_TOPIC_TRAIN: str = "train"
+    KAFKA_GROUP_ID: str = "sound"
+    KAFKA_TOPIC_LLM_INFERENCE: str = "llm-inference"
+    KAFKA_TOPIC_LLM_TRAIN: str = "llm-train"
+    KAFKA_TOPIC_SOUND_INFERENCE: str = "sound-inference"
+    KAFKA_TOPIC_SOUND_TRAIN: str = "sound-train"
+    KAFKA_HEALTH_CHECK_TOPIC: str = "health-check-sound"
 
     # MinIO (S3-compatible storage) Configuration
     MINIO_ENDPOINT: str

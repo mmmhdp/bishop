@@ -5,8 +5,11 @@ from app.common.config import settings
 def main():
     consumer = KafkaMessageConsumer(
         bootstrap_servers=settings.KAFKA_BROKER_URL,
-        topics=[settings.KAFKA_TOPIC_INFERENCE,
-                settings.KAFKA_TOPIC_TRAIN, "health-check"],
+        topics=[
+            settings.KAFKA_HEALTH_CHECK_TOPIC,
+            settings.KAFKA_TOPIC_SOUND_TRAIN,
+            settings.KAFKA_TOPIC_SOUND_INFERENCE,
+        ],
         group_id=settings.KAFKA_GROUP_ID
     )
     consumer.run()

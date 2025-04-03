@@ -1,13 +1,12 @@
 import io
-import json
 import pytest
 from httpx import AsyncClient
 from sqlmodel.ext.asyncio.session import AsyncSession
 from minio import Minio
 
 from app.common.config import settings
-from app.tests.utils.chat import create_random_chat
-from app.tests.utils.utils import get_object_key_from_url
+from app.tests.utils.avatar import create_random_avatar
+from app.broker.broker_utils import get_object_key_from_url
 
 
 @pytest.mark.asyncio
@@ -17,23 +16,19 @@ async def test_upload_file_real_minio(
     db: AsyncSession,
     s3_client: Minio
 ):
-    chat = await create_random_chat(db)
-    avatar_id = str(chat.avatar_id)
-
-    item_data = {
-        "title": "test ping pong",
-        "url": "",
-    }
-
-    file_content = b"mock file content"
-    files = {
-        "file": (
-            "mock_train_material.txt", io.BytesIO(file_content), "text/plain"
-        )
-    }
+    avatar = await create_random_avatar(db)
+    avatar_id = str(avatar.id)
 
     data = {
-        "item_in": json.dumps(item_data)
+        "type": "text"
+    }
+
+    files = {
+        "file": (
+            "mock_train_material.txt",
+            io.BytesIO(b"mock file content"),
+            "text/plain"
+        )
     }
 
     response = await async_client.post(
@@ -42,16 +37,14 @@ async def test_upload_file_real_minio(
         data=data,
         files=files
     )
-    print(response.json())
-    print(response.url)
+
     assert response.status_code == 200
     body = response.json()
 
     assert body["avatar_id"] == avatar_id
     assert body["url"].startswith("http")
     assert body["is_trained_on"] is False
+    assert body["type"] == "text"
 
-    url = body["url"]
-    object_key = get_object_key_from_url(url, settings.MINIO_BUCKET)
-
+    object_key = get_object_key_from_url(body["url"], settings.MINIO_BUCKET)
     s3_client.remove_object(settings.MINIO_BUCKET, object_key)

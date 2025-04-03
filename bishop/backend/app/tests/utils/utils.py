@@ -1,5 +1,4 @@
 from httpx import AsyncClient
-from urllib.parse import urlparse
 from app.common.config import settings
 import random
 import string
@@ -25,11 +24,3 @@ async def get_superuser_token_headers_async(client: AsyncClient) -> dict[str, st
     )
     tokens = r.json()
     return {"Authorization": f"Bearer {tokens['access_token']}"}
-
-
-def get_object_key_from_url(url: str, bucket_name: str) -> str:
-    parsed = urlparse(url)
-    path = parsed.path.lstrip("/")
-    if path.startswith(bucket_name + "/"):
-        return path[len(bucket_name) + 1:]
-    raise ValueError("URL does not contain expected bucket prefix")

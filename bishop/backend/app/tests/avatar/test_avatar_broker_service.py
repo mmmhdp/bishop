@@ -7,7 +7,7 @@ from app.train_material.TrainMaterial import TrainMaterial
 
 
 @pytest.mark.asyncio
-@patch("app.avatar.avatar_broker_service.settings.KAFKA_TOPIC_TRAIN", "train")
+@patch("app.avatar.avatar_broker_service.settings.KAFKA_TOPIC_LLM_TRAIN", "llm-train")
 async def test_send_train_start_message():
     avatar_id = uuid.uuid4()
 
@@ -15,9 +15,9 @@ async def test_send_train_start_message():
     mock_exec_result = MagicMock()
     mock_exec_result.all.return_value = [
         TrainMaterial(id=uuid.uuid4(), avatar_id=avatar_id,
-                      title="Doc 1", url="http://one.com", is_trained_on=False),
+                      type="Doc 1", url="http://one.com", is_trained_on=False),
         TrainMaterial(id=uuid.uuid4(), avatar_id=avatar_id,
-                      title="Doc 2", url="http://two.com", is_trained_on=False),
+                      type="Doc 2", url="http://two.com", is_trained_on=False),
     ]
     mock_session.exec = AsyncMock(return_value=mock_exec_result)
 
@@ -33,14 +33,14 @@ async def test_send_train_start_message():
     mock_producer.send.assert_awaited_once()
     args = mock_producer.send.call_args.kwargs
 
-    assert args["topic"] == "train"
+    assert args["topic"] == "llm-train"
     assert args["data"]["event"] == "train_start"
     assert args["data"]["avatar_id"] == str(avatar_id)
     assert len(args["data"]["train_materials"]) == 2
 
 
 @pytest.mark.asyncio
-@patch("app.avatar.avatar_broker_service.settings.KAFKA_TOPIC_TRAIN", "train")
+@patch("app.avatar.avatar_broker_service.settings.KAFKA_TOPIC_LLM_TRAIN", "llm-train")
 async def test_send_train_stop_message():
     avatar_id = uuid.uuid4()
 
@@ -55,6 +55,6 @@ async def test_send_train_stop_message():
     mock_producer.send.assert_awaited_once()
     args = mock_producer.send.call_args.kwargs
 
-    assert args["topic"] == "train"
+    assert args["topic"] == "llm-train"
     assert args["data"]["event"] == "train_stop"
     assert args["data"]["avatar_id"] == str(avatar_id)

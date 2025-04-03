@@ -1,6 +1,5 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Form
 import json
-from typing import Any
 import uuid
 
 from app.common.api_deps import SessionDep, CurrentUser
@@ -16,22 +15,14 @@ async def upload_file(
     session: SessionDep,
     current_user: CurrentUser,
     avatar_id: uuid.UUID,
-    item_in: str = Form(...),
+    type: str = Form(...),
     file: UploadFile = File(...)
-) -> Any:
+) -> TrainMaterial:
     """
-    Upload a new file (audio/video/text) for training and store it in MinIO.
+    Upload a new file for training and store it in S3 storage.
     """
     try:
-        item_data = json.loads(item_in)
-        item_data["avatar_id"] = avatar_id
-
-        item = TrainMaterialCreate(**item_data)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON: {str(e)}")
-
-    try:
-        file_url = await train_material_repository.upload_to_minio(
+        file_url = await train_material_repository.upload_to_s3(
             user_id=current_user.id, avatar_id=avatar_id, file=file)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -39,6 +30,7 @@ async def upload_file(
     train_data = TrainMaterial(
         avatar_id=avatar_id,
         url=file_url,
+        type=type,
         is_trained_on=False,
     )
 

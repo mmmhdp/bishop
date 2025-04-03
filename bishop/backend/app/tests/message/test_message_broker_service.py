@@ -20,7 +20,7 @@ async def test_send_generate_response_message():
     )
 
     mock_producer.send.assert_called_once_with(
-        topic=settings.KAFKA_TOPIC_INFERENCE,
+        topic=settings.KAFKA_TOPIC_LLM_INFERENCE,
         data={
             "event": "inference_response",
             "message_id": str(message_id),

@@ -16,11 +16,11 @@ def dummy_upload_file():
 
 
 @pytest.mark.asyncio
-async def test_upload_to_minio_success(s3_client: Minio, dummy_upload_file):
+async def test_upload_to_s3_success(s3_client: Minio, dummy_upload_file):
     user_id = uuid.uuid4()
     avatar_id = uuid.uuid4()
 
-    url = await train_material_repository.upload_to_minio(
+    url = await train_material_repository.upload_to_s3(
         file=dummy_upload_file,
         user_id=user_id,
         avatar_id=avatar_id

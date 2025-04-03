@@ -94,8 +94,28 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
       - SENTRY_DSN=${SENTRY_DSN}
 
-  ml:
-    image: '${DOCKER_IMAGE_ML?Variable not set}:${TAG-latest}'
+  llm:
+    image: '${DOCKER_IMAGE_LLM?Variable not set}:${TAG-latest}'
+    restart: always
+    networks:
+      - default
+    env_file:
+      - .env
+    environment:
+      - DOMAIN=${DOMAIN}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
+      - SECRET_KEY=${SECRET_KEY?Variable not set}
+      - FIRST_SUPERUSER=${FIRST_SUPERUSER?Variable not set}
+      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD?Variable not set}
+      - SENTRY_DSN=${SENTRY_DSN}
+
+      - REDIS_HOST_PASSWORD=${REDIS_HOST_PASSWORD?Variable not set}
+      - MINIO_ROOT_USER={MINIO_ROOT_USER?Variable not set}
+      - MINIO_ROOT_PASSWORD={MINIO_ROOT_PASSWORD?Variable not set}
+
+  sound:
+    image: '${DOCKER_IMAGE_SOUND?Variable not set}:${TAG-latest}'
     restart: always
     networks:
       - default
@@ -149,7 +169,7 @@ services:
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
 

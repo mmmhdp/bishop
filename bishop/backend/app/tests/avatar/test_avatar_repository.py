@@ -1,7 +1,8 @@
+from uuid import uuid4
 import pytest
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-from uuid import uuid4
+from redis import asyncio as AsyncRedis
 
 from app.avatar import avatar_repository
 from app.avatar.Avatar import Avatar, AvatarCreate, AvatarUpdate
@@ -77,13 +78,20 @@ async def test_update_avatar(db: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_delete_avatar(db: AsyncSession):
+async def test_delete_avatar(
+    db: AsyncSession,
+    cache_client: AsyncRedis,
+):
     user = await create_random_user(db)
     avatar = await avatar_repository.create_avatar(
         session=db, avatar_create=AvatarCreate(name="Delete Me"), user=user
     )
 
-    deleted = await avatar_repository.delete_avatar(session=db, avatar_id=avatar.id)
+    deleted = await avatar_repository.delete_avatar(
+        session=db,
+        cache_db=cache_client,
+        avatar_id=avatar.id
+    )
     assert deleted is True
 
     result = await db.exec(select(Avatar).where(Avatar.id == avatar.id))
@@ -91,8 +99,15 @@ async def test_delete_avatar(db: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_delete_nonexistent_avatar(db: AsyncSession):
-    result = await avatar_repository.delete_avatar(session=db, avatar_id=uuid4())
+async def test_delete_nonexistent_avatar(
+    db: AsyncSession,
+    cache_client: AsyncRedis,
+):
+    result = await avatar_repository.delete_avatar(
+        session=db,
+        cache_db=cache_client,
+        avatar_id=uuid4()
+    )
     assert result is None
 
 

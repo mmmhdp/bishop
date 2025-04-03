@@ -9,12 +9,6 @@ import app.common.models_init
 
 
 from minio import Minio
-from redis import asyncio as AsyncRedis
-
-redis_client = AsyncRedis.from_url(
-    url=settings.REDIS_URL,
-    decode_responses=True
-)
 
 
 minio_client = Minio(

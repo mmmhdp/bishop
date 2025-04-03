@@ -1,6 +1,0 @@
-2025-03-26 22:27:38 - ml_logger - INFO - Subscribed to topics: ['inference', 'train']
-2025-03-26 22:27:53 - ml_logger - INFO - Consumer interrupted, shutting down...
-2025-03-26 22:27:53 - ml_logger - INFO - Consumer closed.
-2025-03-26 22:29:32 - ml_logger - INFO - Subscribed to topics: ['inference', 'train', 'health-check']
-2025-03-26 22:29:51 - ml_logger - INFO - Consumer interrupted, shutting down...
-2025-03-26 22:29:51 - ml_logger - INFO - Consumer closed.

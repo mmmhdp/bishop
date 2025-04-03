@@ -67,12 +67,12 @@ services:
       - "9000:9000" # actual bucket port
       - "9001:9001" # console port
 
-  ml:
+  llm:
     restart: "no"
     ports:
       - "11000:11000"
     build:
-      context: ./ml
+      context: ./llm
     command:
       - uv
       - run
@@ -81,13 +81,36 @@ services:
       - app.main
     develop:
       watch:
-        - path: ./ml
+        - path: ./llm
           action: sync
           target: /app
           ignore:
-            - ./ml/.venv
+            - ./llm/.venv
             - .venv
-        - path: ./ml/pyproject.toml
+        - path: ./llm/pyproject.toml
+          action: rebuild
+
+  sound:
+    restart: "no"
+    ports:
+      - "11001:11001"
+    build:
+      context: ./sound
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - app.main
+    develop:
+      watch:
+        - path: ./sound
+          action: sync
+          target: /app
+          ignore:
+            - ./sound/.venv
+            - .venv
+        - path: ./sound/pyproject.toml
           action: rebuild
 
   backend:

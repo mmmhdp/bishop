@@ -6,7 +6,8 @@ from app.common.models.SimpleMessage import SimpleMessage
 from app.common.api_deps import (
     CurrentUser,
     SessionDep,
-    ProducerDep
+    ProducerDep,
+    CacheDep,
 )
 from app.avatar.Avatar import (
     AvatarCreate,
@@ -19,6 +20,12 @@ from app.avatar import avatar_broker_service
 from app.avatar import avatar_repository
 
 router = APIRouter()
+
+AVATAR_STATUS = {
+    "available": "available",
+    "training": "training",
+    "deleted": "deleted"
+}
 
 
 @router.get("/", response_model=AvatarsPublic)
@@ -42,6 +49,7 @@ async def read_user_avatars(
 async def create_avatar(
     *,
     session: SessionDep,
+    cache_db: CacheDep,
     current_user: CurrentUser,
     avatar_in: AvatarCreate
 ) -> Avatar:
@@ -51,6 +59,13 @@ async def create_avatar(
     new_avatar = await avatar_repository.create_avatar(
         session=session, avatar_create=avatar_in, user=current_user
     )
+
+    await avatar_repository.set_training_status(
+        cache_db=cache_db,
+        avatar_id=new_avatar.id,
+        status=AVATAR_STATUS["available"]
+    )
+
     return new_avatar
 
 
@@ -79,11 +94,12 @@ async def update_avatar(
 async def delete_avatar(
     *,
     session: SessionDep,
+    cache_db: CacheDep,
     current_user: CurrentUser,
     id: uuid.UUID
 ) -> SimpleMessage:
     """
-    Delete an message.
+    Delete an avatar.
     """
     avatar = await session.get(Avatar, id)
     if not avatar:
@@ -91,7 +107,11 @@ async def delete_avatar(
     if not current_user.is_superuser and (avatar.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    await avatar_repository.delete_avatar(session, id)
+    await avatar_repository.delete_avatar(
+        session=session,
+        cache_db=cache_db,
+        avatar_id=id
+    )
     return SimpleMessage(message="Avatar deleted successfully")
 
 
@@ -99,6 +119,7 @@ async def delete_avatar(
 async def start_training(
     *,
     session: SessionDep,
+    cache_db: CacheDep,
     current_user: CurrentUser,
     producer: ProducerDep,
     avatar_id: uuid.UUID
@@ -112,11 +133,26 @@ async def start_training(
     if not current_user.is_superuser and avatar.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
+    current_status = await avatar_repository.get_training_status(
+        cache_db=cache_db,
+        avatar_id=avatar_id
+    )
+
+    if current_status == AVATAR_STATUS["training"]:
+        return SimpleMessage(message=f"Training in process for avatar {avatar_id}")
+
+    await avatar_repository.set_training_status(
+        cache_db=cache_db,
+        avatar_id=avatar_id,
+        status=AVATAR_STATUS["training"]
+    )
+
     await avatar_broker_service.send_train_start_message(
         session=session,
         producer=producer,
         avatar_id=avatar_id
     )
+
     return SimpleMessage(message=f"Training started for avatar {avatar_id}")
 
 
@@ -124,6 +160,7 @@ async def start_training(
 async def stop_training(
     *,
     session: SessionDep,
+    cache_db: CacheDep,
     current_user: CurrentUser,
     avatar_id: uuid.UUID,
     producer: ProducerDep,
@@ -137,8 +174,45 @@ async def stop_training(
     if not current_user.is_superuser and avatar.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
+    status = await avatar_repository.get_training_status(
+        cache_db=cache_db,
+        avatar_id=avatar.id
+    )
+
+    if status == AVATAR_STATUS["available"]:
+        return SimpleMessage(message=f"Training stop requested for avatar {avatar_id}")
+
     await avatar_broker_service.send_train_stop_message(
         producer=producer,
         avatar_id=avatar_id
     )
+
+    await avatar_repository.set_training_status(
+        cache_db=cache_db,
+        avatar_id=avatar_id,
+        status=AVATAR_STATUS["available"]
+    )
+
     return SimpleMessage(message=f"Training stop requested for avatar {avatar_id}")
+
+
+@router.post("/{avatar_id}/train/status", response_model=SimpleMessage)
+async def get_training_status(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    cache_db: CacheDep,
+    avatar_id: uuid.UUID,
+) -> SimpleMessage:
+    """
+    Get training status for a specific avatar.
+    """
+    status = await avatar_repository.get_training_status(
+        cache_db=cache_db,
+        avatar_id=avatar_id
+    )
+    print(f"Status: {status}")
+    if status:
+        return SimpleMessage(message=status)
+
+    raise HTTPException(status_code=404, detail="Avatar not found")

@@ -1,5 +1,4 @@
 import uuid
-import os
 from io import BytesIO
 from fastapi import UploadFile, HTTPException
 from app.common.config import settings
@@ -33,7 +32,7 @@ def detect_file_type(file_ext: str) -> str:
         status_code=400, detail=f"Unsupported file extension: .{file_ext}")
 
 
-async def upload_to_minio(file: UploadFile, user_id: uuid.UUID, avatar_id: uuid.UUID) -> str:
+async def upload_to_s3(file: UploadFile, user_id: uuid.UUID, avatar_id: uuid.UUID) -> str:
     """
     Uploads file to MinIO with organized path and returns the full URL.
     Path format: users/{user_id}/avatars/{avatar_id}/{type}/{file_id}.{ext}
