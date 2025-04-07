@@ -83,6 +83,64 @@ async def test_read_user_avatars(
 
 
 @pytest.mark.asyncio
+async def test_read_avatar_success(
+    async_client: AsyncClient,
+    superuser_token_headers: dict[str, str],
+    db: AsyncSession,
+):
+    avatar = await create_random_avatar(db)
+    response = await async_client.get(
+        f"{settings.API_V1_STR}/avatars/{avatar.id}",
+        headers=superuser_token_headers
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == str(avatar.id)
+    assert data["name"] == avatar.name
+
+
+@pytest.mark.asyncio
+async def test_read_avatar_not_found(
+    async_client: AsyncClient,
+    superuser_token_headers: dict[str, str],
+):
+    random_uuid = uuid.uuid4()
+    response = await async_client.get(
+        f"{settings.API_V1_STR}/avatars/{random_uuid}",
+        headers=superuser_token_headers
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Avatar not found"
+
+
+@pytest.mark.asyncio
+async def test_read_avatar_not_enough_permissions(
+    async_client: AsyncClient,
+    db: AsyncSession,
+):
+    avatar = await create_random_avatar(db)
+    password = "userpass123"
+    user = await create_random_user(db, password=password)
+
+    login_response = await async_client.post(
+        f"{settings.API_V1_STR}/login/access-token",
+        data={"username": user.email, "password": password},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    token_info = login_response.json()
+    headers = {
+        "Authorization": f"{token_info['token_type']} {token_info['access_token']}"
+    }
+
+    response = await async_client.get(
+        f"{settings.API_V1_STR}/avatars/{avatar.id}",
+        headers=headers
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Not enough permissions"
+
+
+@pytest.mark.asyncio
 @patch("app.avatar.avatar_broker_service.send_train_start_message", new_callable=AsyncMock)
 async def test_start_training_avatar(
     mock_send_train_start_message: AsyncMock,
@@ -174,4 +232,3 @@ async def test_avatar_permission_denied(
         headers=token_headers
     )
     assert response.status_code in [400, 403]
-
