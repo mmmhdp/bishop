@@ -24,7 +24,7 @@ async def create_random_chat_message(
     chat_with_preloads = result.scalar_one()
 
     item_in = MessageCreate(text=random_lower_string())
-    new_message = await message_repository.create_message(
+    new_message, rsp_msg = await message_repository.create_message(
         session=db,
         current_user=chat_with_preloads.avatar.user,
         avatar_id=chat_with_preloads.avatar.id,
@@ -32,4 +32,4 @@ async def create_random_chat_message(
         item_in=item_in
     )
 
-    return new_message
+    return new_message, rsp_msg

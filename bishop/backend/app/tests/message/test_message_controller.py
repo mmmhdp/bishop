@@ -15,23 +15,28 @@ async def test_create_message(async_client: AsyncClient, superuser_token_headers
     avatar_id = str(chat.avatar_id)
     chat_id = str(chat.id)
     data = {
-        "title": random_lower_string(),
-        "text": "Ping"
+        "text": "Ping",
+        "is_generated": False,
+        "dub_url": None
     }
+
     response = await async_client.post(
         f"{settings.API_V1_STR}/avatars/{avatar_id}/chat/{chat_id}/msgs/",
         headers=superuser_token_headers,
         json=data
     )
+
+    print(f"Response: {response.json()}")
+
     assert response.status_code == 200
     content = response.json()
-    assert content["text"] == data["text"]
+    assert content["text"] is None
     assert "id" in content
 
 
 @pytest.mark.asyncio
 async def test_read_messages(async_client: AsyncClient, superuser_token_headers: dict, db: AsyncSession):
-    msg = await create_random_chat_message(db)
+    msg, rsp_msg = await create_random_chat_message(db)
     avatar_id = str(msg.avatar_id)
     chat_id = str(msg.chat_id)
 
@@ -47,7 +52,7 @@ async def test_read_messages(async_client: AsyncClient, superuser_token_headers:
 
 @pytest.mark.asyncio
 async def test_read_message(async_client: AsyncClient, superuser_token_headers: dict, db: AsyncSession):
-    msg = await create_random_chat_message(db)
+    msg, rsp_msg = await create_random_chat_message(db)
     avatar_id = str(msg.avatar_id)
     chat_id = str(msg.chat_id)
 
@@ -63,7 +68,7 @@ async def test_read_message(async_client: AsyncClient, superuser_token_headers: 
 
 @pytest.mark.asyncio
 async def test_update_message(async_client: AsyncClient, superuser_token_headers: dict, db: AsyncSession):
-    msg = await create_random_chat_message(db)
+    msg, rsp_msg = await create_random_chat_message(db)
     avatar_id = str(msg.avatar_id)
     chat_id = str(msg.chat_id)
 
@@ -80,7 +85,7 @@ async def test_update_message(async_client: AsyncClient, superuser_token_headers
 
 @pytest.mark.asyncio
 async def test_delete_message(async_client: AsyncClient, superuser_token_headers: dict, db: AsyncSession):
-    msg = await create_random_chat_message(db)
+    msg, rsp_msg = await create_random_chat_message(db)
     avatar_id = str(msg.avatar_id)
     chat_id = str(msg.chat_id)
 
@@ -105,4 +110,21 @@ async def test_get_response_for_message_not_found(async_client: AsyncClient, sup
             chat_id}/msgs/{random_message_id}/response/",
         headers=superuser_token_headers,
     )
+    print(response.json())
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_get_response_for_message_not_generated(async_client: AsyncClient, superuser_token_headers: dict, db: AsyncSession):
+    msg, rsp_msg = await create_random_chat_message(db)
+
+    avatar_id = str(msg.avatar_id)
+    chat_id = str(msg.chat_id)
+
+    response = await async_client.get(
+        f"{settings.API_V1_STR}/avatars/{avatar_id}/chat/{
+            chat_id}/msgs/{rsp_msg.id}/response/",
+        headers=superuser_token_headers,
+    )
+    print(response.json())
     assert response.status_code == 404

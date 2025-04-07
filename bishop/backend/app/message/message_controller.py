@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 import uuid
 
 from fastapi import APIRouter, HTTPException
@@ -72,7 +72,7 @@ async def create_message(
     """
     Create a new message in a specific chat.
     """
-    message = await message_repository.create_message(
+    message, rsp_msg = await message_repository.create_message(
         session=session,
         current_user=current_user,
         avatar_id=avatar_id,
@@ -82,11 +82,11 @@ async def create_message(
 
     await message_broker_service.send_generate_response_message(
         producer=producer,
-        message_id=message.id,
+        message_id=rsp_msg.id,
         user_message=message.text
     )
 
-    return message
+    return rsp_msg
 
 
 @router.put("/{message_id}", response_model=MessagePublic)
@@ -133,7 +133,7 @@ async def delete_message(
     return SimpleMessage(message="Message deleted successfully")
 
 
-@router.get("/{message_id}/response/")
+@router.get("/{rsp_msg_id}/response/")
 async def get_avatar_response(
     *,
     session: SessionDep,
@@ -141,18 +141,16 @@ async def get_avatar_response(
     current_user: CurrentUser,
     avatar_id: uuid.UUID,
     chat_id: uuid.UUID,
-    message_id: uuid.UUID,
+    rsp_msg_id: uuid.UUID,
 ) -> Message:
 
-    rsp_id = await message_repository.get_response_id_by_msg_id(
-        chache_db, message_id
-    )
-    if not rsp_id:
-        raise HTTPException(status_code=404, detail="Response not found")
-
-    rsp_msg = await session.get(Message, message_id)
+    rsp_msg = await session.get(Message, rsp_msg_id)
     if not rsp_msg:
         raise HTTPException(
-            status_code=404, detail="Response not found")
+            status_code=422, detail="Response message is not exists")
+
+    if not rsp_msg.text:
+        raise HTTPException(
+            status_code=404, detail="Response is not ready yet")
 
     return rsp_msg

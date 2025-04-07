@@ -25,7 +25,7 @@ async def test_create_message(db: AsyncSession):
     )
     chat_with_preloads = result.scalar_one()
 
-    message = await message_repository.create_message(
+    message, rsp_msg = await message_repository.create_message(
         session=db,
         current_user=chat_with_preloads.avatar.user,
         avatar_id=chat_with_preloads.avatar_id,
@@ -37,6 +37,9 @@ async def test_create_message(db: AsyncSession):
     assert message.chat_id == chat_with_preloads.id
     assert message.avatar_id == chat_with_preloads.avatar_id
     assert message.user_id == chat_with_preloads.avatar.user_id
+
+    assert rsp_msg.is_generated is True
+    assert rsp_msg.text is None
 
 
 @pytest.mark.asyncio

@@ -47,7 +47,21 @@ async def create_message(
         chat_id=chat_id
     )
 
+    rsp_msg_box = Message(
+        id=uuid.uuid4(),
+        user_id=current_user.id,
+        avatar_id=avatar_id,
+        chat_id=chat_id,
+        text=None,
+        is_generated=True,
+        dub_url=None,
+    )
+
     session.add(message)
+    session.add(rsp_msg_box)
+
     await session.commit()
     await session.refresh(message)
-    return message
+    await session.refresh(rsp_msg_box)
+
+    return message, rsp_msg_box
