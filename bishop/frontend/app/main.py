@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-
+import asyncio
 from fasthtml.common import *
 import httpx
 
@@ -586,3 +586,98 @@ async def chat_create(avatar_id: str, chat_create_info: ChatCreateInfo, sess):
     print(res.json())
     chats_list = await chat_list_view(sess, avatar_id)
     return chats_list
+
+
+@rt("/avatar/{avatar_id}/chat/{chat_id}/messages/")
+async def chat_messages_view(avatar_id: str, chat_id: str, sess):
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
+        url = f"{BACKEND_URL}/avatars/{avatar_id}/chat/{chat_id}/msgs/"
+        res = await client.get(url)
+        print(res.json())
+        messages = res.json().get("data", [])[-10:] if res.status_code == 200 else []
+
+    message_box = Div(
+        *[
+            Div(
+                P(f"Avatar : {msg['text']}"),
+            )
+            for msg in messages
+        ],
+        id="chat-history",
+        cls="chat-history"
+    )
+
+    return Div(
+        message_box,
+        Form(
+            Input(name="text", placeholder="Type your message...", required=True),
+            Button("Send"),
+            hx_post=f"/avatar/{avatar_id}/chat/{chat_id}/send_message",
+            hx_target="#chat-history",
+            hx_swap="beforeend"
+        ),
+        Button(
+            "Back to Chats",
+            hx_get=f"/avatar/{avatar_id}/chat_widget",
+            hx_target="#avatar-view",
+            hx_swap="innerHTML"
+        ),
+    )
+
+
+@rt("/avatar/{avatar_id}/chat/{chat_id}/send_message", methods=["POST"])
+async def send_message(avatar_id: str, chat_id: str, text: str, sess):
+    payload = {
+        "text": text,
+        "is_generated": False,
+        "dub_url": ""
+    }
+
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
+        url = f"{BACKEND_URL}/avatars/{avatar_id}/chat/{chat_id}/msgs/"
+        res = await client.post(url, json=payload)
+
+        if res.status_code == 200:
+            message = res.json()
+
+            user_block = Div(
+                P(f"You: {text}"),
+                cls="chat-message-user"
+            )
+
+            waiting_block = Div(
+                P("Avatar is typing..."),
+                id=f"poll-rsp-{message['id']}",
+                hx_get=f"/avatar/{avatar_id}/chat/{
+                    chat_id}/poll_response/{message['id']}/",
+                hx_trigger="load delay:500ms",
+                hx_swap="outerHTML"
+            )
+
+            return (user_block, waiting_block)
+
+    return Div(P("Failed to send message."), cls="chat-message-error")
+
+
+@rt("/avatar/{avatar_id}/chat/{chat_id}/poll_response/{rsp_msg_id}/")
+async def poll_response(avatar_id: str, chat_id: str, rsp_msg_id: str, sess):
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
+        for _ in range(5):
+            await asyncio.sleep(0.5)
+            url = f"{
+                BACKEND_URL}/avatars/{avatar_id}/chat/{chat_id}/msgs/{rsp_msg_id}/response/"
+            res = await client.get(url)
+            if res.status_code == 200:
+                msg = res.json()
+                return Div(
+                    P(f"Avatar: {msg['text']}"),
+                    cls="chat-message-bot"
+                )
+
+    return Div(
+        P("Avatar is still thinking..."),
+        id=f"poll-rsp-{rsp_msg_id}",
+        hx_get=f"/avatar/{avatar_id}/chat/{chat_id}/poll_response/{rsp_msg_id}/",
+        hx_trigger="load delay:1000ms",
+        hx_swap="outerHTML"
+    )
