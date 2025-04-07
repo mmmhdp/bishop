@@ -1,17 +1,29 @@
-from app.logging_service import logger
-from fasthtml.common import *
 from dataclasses import dataclass, asdict
-from app.config import BACKEND_URL
-from pathlib import Path
 
+from fasthtml.common import *
 import httpx
 
+from app.config import BACKEND_URL
+from app.logging_service import logger
 
 main_css = Link(rel="stylesheet",
                 href="app/static/styles.css", type="text/css")
 fav = Link(rel="icon", type="image/svg+xml", href="app/static/favicon.ico")
 og = Link(rel="icon", type="image/svg+xml", href="app/static/og-image.ico")
 hdrs = [main_css, fav, og]
+
+
+def get_auth_headers(sess):
+    jwt_keys = ["token_type", "access_token"]
+    for key in jwt_keys:
+        if key not in sess:
+            return None
+
+    token_type = sess["token_type"]
+    token = sess["access_token"]
+    headers = {"Authorization": f"{token_type} {token}"}
+
+    return headers
 
 
 async def jwt_before(req, sess):
@@ -155,6 +167,13 @@ async def post(log_info: LoginInfo, sess):
         if res.status_code == 200:
             sess["access_token"] = res.json()["access_token"]
             sess["token_type"] = res.json()["token_type"]
+
+            # Fetch user info
+            func_url = "/users/me"
+            url_to_call = BACKEND_URL + func_url
+            res = await cli.get(url_to_call)
+            print(res.json())
+
             add_toast(sess, "login is successful!", "info")
             return Redirect("/index")
 
@@ -297,6 +316,38 @@ async def user_info_box(sess):
     )
 
 
+@dataclass
+class AvatarCreateInfo:
+    name: str
+
+
+@rt("/avatar-create")
+async def avatar_create(avatar_info: AvatarCreateInfo, sess):
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as cli:
+        func_url = "/avatars/"
+        url_to_call = BACKEND_URL + func_url
+
+        print(asdict(avatar_info))
+        res = await cli.post(url_to_call, json=asdict(avatar_info))
+
+        if res.status_code == 200:
+            add_toast(sess, "Avatar created successfully!", "info")
+            return Redirect("/index")
+
+        elif res.status_code == 400:
+            print(res.json())
+            err_text = res.json()["detail"]
+            add_toast(sess, err_text, "info")
+            return Redirect("/index")
+
+        else:
+            err_text = "INVALID RESPONSE CODE"
+            print(res.json())
+            add_toast(sess, err_text, "info")
+
+    return Redirect("/index")
+
+
 @rt("/avatar-list")
 async def avatars_list_box(sess):
     avatars = await fetch_avatars(sess)
@@ -312,6 +363,16 @@ async def avatars_list_box(sess):
     )
 
     return Div(
+        Div(
+            Form(
+                Input(id="avatar-name", name="name",
+                      placeholder="Avatar Name", required=True),
+                Button("Create Avatar"),
+                action="/avatar-create", method="post",
+                hx_target="#avatar-crud-result", hx_swap="innerHTML"
+            ),
+            cls="crud-section"
+        ),
         H2("Avatars"),
         avatar_list_view,
         id="avatar-view"
@@ -326,32 +387,53 @@ async def get(sess):
         hx_post="/signout",
     )
 
-    user_box = await user_info_box(sess),
+    user_view = await user_info_box(sess)
     avatar_list_view = await avatars_list_box(sess)
+
     return Titled(
         "User Page",
-        user_box,
+        user_view,
         avatar_list_view,
 
     )
 
 
 @rt("/avatar/{avatar_id}")
-def avatar_view(avatar_id: str):
+async def avatar_view(avatar_id: str, sess):
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as cli:
+        func_url = f"/avatars/{avatar_id}"
+        url_to_call = BACKEND_URL + func_url
+        res = await cli.get(url_to_call)
+        avatar = res.json()
+
+    print(avatar)
+    print(avatar_id)
+
     return Div(
-        Card(f"Avatar: {avatar_id}"),
+        Card(f"Avatar: {avatar["name"]}"),
         Button("Train",
-               hx_get=f"/avatar/{avatar_id}/train_widget",
+               hx_get=f"/avatar/{avatar["id"]}/train_widget",
                hx_target="#avatar-view",
                hx_swap="innerHTML"
                ),
 
         Button("Chat",
-               hx_get=f"/avatar/{avatar_id}/chat_widget",
+               hx_get=f"/avatar/{avatar["id"]}/chat_widget",
+               hx_target="#avatar-view",
+               hx_swap="innerHTML"
+               ),
+        Button("Change Name",
+               hx_get=f"/avatar/{avatar["id"]}/change_name_widget",
                hx_target="#avatar-view",
                hx_swap="innerHTML"
                ),
 
+        Button("Delete",
+               hx_post=f"/avatar/{avatar["id"]}/delete",
+               hx_target="#avatar-view",
+               hx_swap="innerHTML",
+               confirm="Are you sure you want to delete this avatar?"
+               ),
         Button("To avatars list",
                hx_get="/avatar-list",
                hx_target="#avatar-view",
@@ -359,6 +441,44 @@ def avatar_view(avatar_id: str):
                ),
         id="avatar-view"
     )
+
+
+@rt("/avatar/{avatar_id}/change_name_widget")
+def change_name_widget(avatar_id: str):
+    return Form(
+        Input(name="name", placeholder="New Name", required=True),
+        Button("Save Name"),
+        action=f"/avatar/{avatar_id}/change_name", method="post",
+        hx_target="#avatar-view", hx_swap="innerHTML"
+    )
+
+
+@rt("/avatar/{avatar_id}/change_name", methods=["POST"])
+async def change_name(avatar_id: str, name: str, sess):
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
+        response = await client.put(
+            f"{BACKEND_URL}/avatars/{avatar_id}",
+            json={"name": name}
+        )
+    if response.status_code == 200:
+        add_toast(sess, "Avatar renamed successfully!", "success")
+    else:
+        add_toast(sess, "Failed to rename avatar.", "error")
+
+    return Redirect(f"/index")
+
+
+@rt("/avatar/{avatar_id}/delete", methods=["POST"])
+async def delete_avatar(avatar_id: str, sess):
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
+        response = await client.delete(f"{BACKEND_URL}/avatars/{avatar_id}")
+
+    if response.status_code == 200:
+        add_toast(sess, "Avatar deleted!", "success")
+    else:
+        add_toast(sess, "Failed to delete avatar.", "error")
+
+    return Redirect("/index")
 
 
 @rt("/avatar/{avatar_id}/train_widget")
@@ -410,10 +530,7 @@ def avatar_train_widget(avatar_id: str):
     )
 
 
-# Memory-based chat storage: avatar_id → list of messages
 chat_sessions: dict[str, list[dict]] = {}
-
-# Reusable chat message component
 
 
 def ChatMessage(msg: dict) -> FT:
@@ -423,8 +540,6 @@ def ChatMessage(msg: dict) -> FT:
         P(f"{role.title()}: {msg['content']}"),
         cls=cls
     )
-
-# Route: Render chat widget for a given avatar
 
 
 @rt("/avatar/{avatar_id}/chat_widget")
@@ -455,16 +570,19 @@ def avatar_chat_widget(avatar_id: str):
         id="avatar-chat"
     )
 
-# Route: Handle sending message and return user + bot responses
-
 
 @rt("/avatar/{avatar_id}/send_message", methods=["POST"])
 async def avatar_chat_send(avatar_id: str, message: str):
     chat_sessions.setdefault(avatar_id, [])
     chat_sessions[avatar_id].append({"role": "user", "content": message})
+    # chat_id = "chat_id"  # Placeholder for chat ID
 
-    # Simulate mock bot response
-    await asyncio.sleep(0.5)
+    # async with httpx.AsyncClient(headers=get_auth_headers(sess)) as cli:
+    #    func_url = BACKEND_URL + f"/avatars/{avatar_id}/chat/{chat_id}/msgs/"
+    #    url_to_call = BACKEND_URL + func_url
+
+    #    rsp_msg = await cli.post(url_to_call, data=asdict(log_info))
+
     reply = f"MockBot: I received “{message}” and will respond soon!"
     chat_sessions[avatar_id].append({"role": "bot", "content": reply})
 
