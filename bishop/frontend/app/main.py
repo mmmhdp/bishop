@@ -273,25 +273,13 @@ async def post(signup_info: SignUpInfo, sess):
 
 
 async def fetch_user_info(sess):
-    token_type = sess.get("token_type")
-    token = sess.get("access_token")
-    if not token_type or not token:
-        return None
-
-    headers = {"Authorization": f"{token_type} {token}"}
-    async with httpx.AsyncClient(headers=headers) as client:
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
         response = await client.get(f"{BACKEND_URL}/users/me")
         return response.json() if response.status_code == 200 else None
 
 
 async def fetch_avatars(sess):
-    token_type = sess.get("token_type")
-    token = sess.get("access_token")
-    if not token_type or not token:
-        return []
-
-    headers = {"Authorization": f"{token_type} {token}"}
-    async with httpx.AsyncClient(headers=headers) as client:
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
         response = await client.get(f"{BACKEND_URL}/avatars/")
         return response.json().get("data", []) if "data" in response.json() else []
 
@@ -327,7 +315,6 @@ async def avatar_create(avatar_info: AvatarCreateInfo, sess):
         func_url = "/avatars/"
         url_to_call = BACKEND_URL + func_url
 
-        print(asdict(avatar_info))
         res = await cli.post(url_to_call, json=asdict(avatar_info))
 
         if res.status_code == 200:
@@ -369,9 +356,7 @@ async def avatars_list_box(sess):
                       placeholder="Avatar Name", required=True),
                 Button("Create Avatar"),
                 action="/avatar-create", method="post",
-                hx_target="#avatar-crud-result", hx_swap="innerHTML"
             ),
-            cls="crud-section"
         ),
         H2("Avatars"),
         avatar_list_view,
@@ -394,7 +379,6 @@ async def get(sess):
         "User Page",
         user_view,
         avatar_list_view,
-
     )
 
 
@@ -405,9 +389,6 @@ async def avatar_view(avatar_id: str, sess):
         url_to_call = BACKEND_URL + func_url
         res = await cli.get(url_to_call)
         avatar = res.json()
-
-    print(avatar)
-    print(avatar_id)
 
     return Div(
         Card(f"Avatar: {avatar["name"]}"),
@@ -530,63 +511,78 @@ def avatar_train_widget(avatar_id: str):
     )
 
 
-chat_sessions: dict[str, list[dict]] = {}
+@dataclass
+class ChatCreateInfo:
+    title: str
 
 
-def ChatMessage(msg: dict) -> FT:
-    role = msg["role"]
-    cls = "chat-message-user" if role == "user" else "chat-message-bot"
-    return Div(
-        P(f"{role.title()}: {msg['content']}"),
-        cls=cls
+async def chat_list_view(sess, avatar_id: str):
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
+        response = await client.get(f"{BACKEND_URL}/avatars/{avatar_id}/chat/")
+        chats = response.json() if response.status_code == 200 else []
+
+    chat_list_view = Div(
+        *[Button(
+            f"Chat {chat['title']}",
+            hx_get=f"/avatar/{avatar_id}/chat/{chat['id']}/messages/",
+            hx_target="#chat-view",
+            hx_swap="innerHTML",
+        ) for chat in chats],
+        cls="chat-list",
+        id="chat-list"
     )
+    return chat_list_view
 
 
 @rt("/avatar/{avatar_id}/chat_widget")
-def avatar_chat_widget(avatar_id: str):
-    print("Chat widget triggered")
-    chat_sessions.setdefault(avatar_id, [])  # Ensure chat list exists
+async def avatar_chat_widget(sess, avatar_id: str):
+
+    chats_list = await chat_list_view(sess, avatar_id)
 
     return Div(
-        H3(f"Chat with Avatar {avatar_id}"),
         Div(
-            *[ChatMessage(m) for m in chat_sessions[avatar_id]],
-            id="chat-history",
-            cls="chat-history"
+            Form(
+                Input(name="title", placeholder="Chat Title", required=True),
+                Button("Create Chat"),
+                hx_post=f"/avatar/{avatar_id}/chat/create",
+                hx_target="#chat-list",
+                hx_swap="innerHTML"
+            ),
+            cls="crud-section",
+            id="chat-create-section"
         ),
-        Form(
-            Input(name="message", placeholder="Type your message...", required=True),
-            Button("Send", type="submit"),
-            hx_post=f"/avatar/{avatar_id}/send_message",
-            hx_target="#chat-history",
-            hx_swap="beforeend"
-        ),
+        H2("Chats"),
+        chats_list,
         Button(
             "Back",
             hx_get=f"/avatar/{avatar_id}",
             hx_target="#avatar-view",
             hx_swap="innerHTML"
         ),
-        id="avatar-chat"
+        id="chat-view"
     )
 
 
-@rt("/avatar/{avatar_id}/send_message", methods=["POST"])
-async def avatar_chat_send(avatar_id: str, message: str):
-    chat_sessions.setdefault(avatar_id, [])
-    chat_sessions[avatar_id].append({"role": "user", "content": message})
-    # chat_id = "chat_id"  # Placeholder for chat ID
+@rt("/avatar/{avatar_id}/chat/create", methods=["POST"])
+async def chat_create(avatar_id: str, chat_create_info: ChatCreateInfo, sess):
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as cli:
+        func_url = f"/avatars/{avatar_id}/chat/"
+        url_to_call = BACKEND_URL + func_url
 
-    # async with httpx.AsyncClient(headers=get_auth_headers(sess)) as cli:
-    #    func_url = BACKEND_URL + f"/avatars/{avatar_id}/chat/{chat_id}/msgs/"
-    #    url_to_call = BACKEND_URL + func_url
+        res = await cli.post(url_to_call, json=asdict(chat_create_info))
 
-    #    rsp_msg = await cli.post(url_to_call, data=asdict(log_info))
+        if res.status_code == 200:
+            add_toast(sess, "Chat created successfully!", "info")
 
-    reply = f"MockBot: I received “{message}” and will respond soon!"
-    chat_sessions[avatar_id].append({"role": "bot", "content": reply})
+        elif res.status_code == 400:
+            print(res.json())
+            err_text = res.json()["detail"]
+            add_toast(sess, err_text, "info")
 
-    return (
-        ChatMessage({"role": "user", "content": message}),
-        ChatMessage({"role": "bot", "content": reply})
-    )
+        else:
+            err_text = "INVALID RESPONSE CODE"
+            add_toast(sess, err_text, "info")
+
+    print(res.json())
+    chats_list = await chat_list_view(sess, avatar_id)
+    return chats_list
