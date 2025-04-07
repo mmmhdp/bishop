@@ -45,6 +45,27 @@ async def read_user_avatars(
     return avatar_list
 
 
+@router.get("/{avatar_id}", response_model=AvatarPublic)
+async def read_avatar(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    avatar_id: uuid.UUID
+) -> Avatar:
+    """
+    Get a specific avatar by ID.
+    """
+    avatar = await avatar_repository.read_avatar_by_id(
+        session=session, avatar_id=avatar_id
+    )
+    if not avatar:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+    if not current_user.is_superuser and (avatar.user_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+
+    return avatar
+
+
 @router.post("/", response_model=AvatarPublic)
 async def create_avatar(
     *,
@@ -69,39 +90,39 @@ async def create_avatar(
     return new_avatar
 
 
-@router.put("/{id}", response_model=AvatarUpdate)
+@router.put("/{avatar_id}", response_model=AvatarUpdate)
 async def update_avatar(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    id: uuid.UUID,
+    avatar_id: uuid.UUID,
     item_in: AvatarUpdate
 ) -> Avatar:
     """
     Update avatar's name.
     """
-    avatar = await session.get(Avatar, id)
+    avatar = await session.get(Avatar, avatar_id)
     if not avatar:
         raise HTTPException(status_code=404, detail="Avatar not found")
     if not current_user.is_superuser and (avatar.user_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    avatar = await avatar_repository.update_avatar(session, id, item_in)
+    avatar = await avatar_repository.update_avatar(session, avatar_id, item_in)
     return avatar
 
 
-@router.delete("/{id}", response_model=SimpleMessage)
+@router.delete("/{avatar_id}", response_model=SimpleMessage)
 async def delete_avatar(
     *,
     session: SessionDep,
     cache_db: CacheDep,
     current_user: CurrentUser,
-    id: uuid.UUID
+    avatar_id: uuid.UUID
 ) -> SimpleMessage:
     """
     Delete an avatar.
     """
-    avatar = await session.get(Avatar, id)
+    avatar = await session.get(Avatar, avatar_id)
     if not avatar:
         raise HTTPException(status_code=404, detail="Avatar not found")
     if not current_user.is_superuser and (avatar.user_id != current_user.id):
@@ -110,7 +131,7 @@ async def delete_avatar(
     await avatar_repository.delete_avatar(
         session=session,
         cache_db=cache_db,
-        avatar_id=id
+        avatar_id=avatar_id
     )
     return SimpleMessage(message="Avatar deleted successfully")
 
