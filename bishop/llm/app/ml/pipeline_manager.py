@@ -11,11 +11,10 @@ def execute_task_pipeline(task_data):
     if curr_event == "health_check":
         logger.info("Executing health check pipeline")
 
-    if curr_event == "train_start":
+    elif curr_event == "train_start":
         logger.info("Executing llm training pipeline")
         process_train_task(task_data)
 
     elif curr_event == "inference_respose":
         logger.info("Executing llm inference pipeline")
         process_inference_task(task_data)
-
