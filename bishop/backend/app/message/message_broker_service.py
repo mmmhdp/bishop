@@ -1,8 +1,8 @@
 import uuid
 
-from app.broker.producer.Producer import KafkaMessageProducer
 from app.common.logging_service import logger
 from app.common.config import settings
+from app.common.api_deps import ProducerDep
 
 EVENTS = {
     "inference_response": "inference_response",
@@ -10,7 +10,7 @@ EVENTS = {
 
 
 async def send_generate_response_message(
-    producer: KafkaMessageProducer,
+    producer: ProducerDep,
     message_id: uuid.UUID,
     user_message: str = None
 

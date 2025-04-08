@@ -2,7 +2,7 @@ from collections.abc import AsyncGenerator
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
@@ -18,9 +18,9 @@ from app.common.db import (
 )
 
 from app.security.models.Token import TokenPayload
-
 from app.user.User import User
-from app.broker.producer.Producer import KafkaMessageProducer
+from app.broker.Producer import KafkaMessageProducer
+
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
 )
@@ -65,8 +65,8 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
     return current_user
 
 
-async def get_producer() -> KafkaMessageProducer:
-    return KafkaMessageProducer(bootstrap_servers=settings.KAFKA_BROKER_URL)
+async def get_producer(request: Request) -> KafkaMessageProducer:
+    return request.app.state.producer
 
 
 ProducerDep = Annotated[KafkaMessageProducer, Depends(get_producer)]

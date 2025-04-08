@@ -1,12 +1,10 @@
-from app.common.api_deps import ProducerDep
 from fastapi import APIRouter, Depends
 from pydantic.networks import EmailStr
 
 from app.common.api_deps import get_current_active_superuser
-
 from app.common.models.SimpleMessage import SimpleMessage
-
 from app.email.email_service import generate_test_email, send_email
+from app.common.api_deps import ProducerDep
 
 router = APIRouter()
 

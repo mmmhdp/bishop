@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import AsyncMock
 
 from app.message import message_broker_service
-from app.broker.producer.Producer import KafkaMessageProducer
+from app.broker.Producer import KafkaMessageProducer
 from app.common.config import settings
 
 
