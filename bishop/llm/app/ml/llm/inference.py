@@ -13,15 +13,17 @@ def process_inference_task(task_data):
     print(task_data)
     message_id = task_data["message_id"]
     text = task_data["text"]
+
     generated_text = "dummy_text"
-    dub_url = "fake_url"
+    generated_dub_url = "app/sample.mp3"
 
     logger.info(f"Processing inference task with task_data: {task_data}")
 
     # generating logic call
+
     send_update_message_state(
         producer=producer,
         message_id=message_id,
         generated_text=generated_text,
-        dub_url=dub_url
+        dub_url=generated_dub_url
     )
