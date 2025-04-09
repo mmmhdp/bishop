@@ -24,6 +24,6 @@ async def test_send_generate_response_message():
         data={
             "event": "inference_response",
             "message_id": str(message_id),
-            "user_message": user_message,
+            "text": user_message,
         }
     )

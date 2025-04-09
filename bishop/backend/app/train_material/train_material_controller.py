@@ -1,5 +1,4 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException, Form
-import json
 import uuid
 
 from app.common.api_deps import SessionDep, CurrentUser

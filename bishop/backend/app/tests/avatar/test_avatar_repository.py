@@ -2,7 +2,6 @@ from uuid import uuid4
 import pytest
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
-from redis import asyncio as AsyncRedis
 
 from app.avatar import avatar_repository
 from app.avatar.Avatar import Avatar, AvatarCreate, AvatarUpdate
@@ -80,7 +79,6 @@ async def test_update_avatar(db: AsyncSession):
 @pytest.mark.asyncio
 async def test_delete_avatar(
     db: AsyncSession,
-    cache_client: AsyncRedis,
 ):
     user = await create_random_user(db)
     avatar = await avatar_repository.create_avatar(
@@ -89,7 +87,6 @@ async def test_delete_avatar(
 
     deleted = await avatar_repository.delete_avatar(
         session=db,
-        cache_db=cache_client,
         avatar_id=avatar.id
     )
     assert deleted is True
@@ -101,11 +98,9 @@ async def test_delete_avatar(
 @pytest.mark.asyncio
 async def test_delete_nonexistent_avatar(
     db: AsyncSession,
-    cache_client: AsyncRedis,
 ):
     result = await avatar_repository.delete_avatar(
         session=db,
-        cache_db=cache_client,
         avatar_id=uuid4()
     )
     assert result is None
@@ -117,5 +112,42 @@ async def test_update_nonexistent_avatar(db: AsyncSession):
         session=db,
         avatar_id=uuid4(),
         avatar_update=AvatarUpdate(name="Nope")
+    )
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_set_and_get_training_status(db: AsyncSession):
+    user = await create_random_user(db)
+    avatar = await avatar_repository.create_avatar(
+        session=db,
+        avatar_create=AvatarCreate(name="Trainer"),
+        user=user
+    )
+
+    initial_status = await avatar_repository.get_training_status(session=db, avatar_id=avatar.id)
+    assert initial_status == "available"
+
+    await avatar_repository.set_training_status(session=db, avatar_id=avatar.id, status="training")
+
+    new_status = await avatar_repository.get_training_status(session=db, avatar_id=avatar.id)
+    assert new_status == "training"
+
+
+@pytest.mark.asyncio
+async def test_set_training_status_nonexistent_avatar(db: AsyncSession):
+    result = await avatar_repository.set_training_status(
+        session=db,
+        avatar_id=uuid4(),
+        status="nonexistent"
+    )
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_get_training_status_nonexistent_avatar(db: AsyncSession):
+    result = await avatar_repository.get_training_status(
+        session=db,
+        avatar_id=uuid4(),
     )
     assert result is None

@@ -1,11 +1,13 @@
-import pytest
 import uuid
+import pytest
 from httpx import AsyncClient
 from sqlmodel.ext.asyncio.session import AsyncSession
-from redis import asyncio as AsyncRedis
 from unittest.mock import AsyncMock, patch
 
 from app.common.config import settings
+from app.common.logging_service import logger
+from app.avatar.Avatar import Avatar
+from app.avatar.avatar_controller import AVATAR_STATUS
 from app.tests.utils.avatar import create_random_avatar
 from app.tests.utils.user import create_random_user
 
@@ -14,7 +16,6 @@ from app.tests.utils.user import create_random_user
 async def test_create_avatar(
     async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
-    cache_client: AsyncRedis
 ):
     data = {"name": "Cowboy Bebop"}
     response = await async_client.post(
@@ -26,9 +27,7 @@ async def test_create_avatar(
     content = response.json()
     assert "id" in content
     assert content["name"] == "Cowboy Bebop"
-
-    status = await cache_client.get(str(content['id']))
-    assert status == "available"
+    assert content["status"] == AVATAR_STATUS["available"]
 
 
 @pytest.mark.asyncio
@@ -53,7 +52,6 @@ async def test_delete_avatar(
     async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
     db: AsyncSession,
-    cache_client: AsyncRedis,
 ):
     avatar = await create_random_avatar(db)
     response = await async_client.delete(
@@ -147,24 +145,25 @@ async def test_start_training_avatar(
     async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
     db: AsyncSession,
-    cache_client: AsyncRedis,
 ):
     avatar = await create_random_avatar(db)
-    await cache_client.set(str(avatar.id), "available")
 
+    logger.info(f"BEFORE Avatar {avatar.id} status: {avatar.status}")
     response = await async_client.post(
         f"{settings.API_V1_STR}/avatars/{avatar.id}/train/start",
-        headers=superuser_token_headers
+        headers=superuser_token_headers,
     )
+    logger.info(f"AFTER Avatar {avatar.id} status: {avatar.status}")
 
     assert response.status_code == 200
     assert response.json()["message"] == f"Training started for avatar {
         avatar.id}"
-
     mock_send_train_start_message.assert_called_once()
 
-    status = await cache_client.get(str(avatar.id))
-    assert status == "training"
+    refreshed = await db.get(Avatar, avatar.id)
+    await db.refresh(refreshed)
+    logger.info(f"Avatar {refreshed.id} status: {refreshed.status}")
+    assert refreshed.status == AVATAR_STATUS["training"]
 
 
 @pytest.mark.asyncio
@@ -174,10 +173,11 @@ async def test_stop_training_avatar(
     async_client: AsyncClient,
     superuser_token_headers: dict[str, str],
     db: AsyncSession,
-    cache_client: AsyncRedis,
 ):
     avatar = await create_random_avatar(db)
-    await cache_client.set(str(avatar.id), "training")
+    avatar.status = AVATAR_STATUS["training"]
+    db.add(avatar)
+    await db.commit()
 
     response = await async_client.post(
         f"{settings.API_V1_STR}/avatars/{avatar.id}/train/stop",
@@ -189,8 +189,43 @@ async def test_stop_training_avatar(
         avatar.id}"
     mock_send_train_stop_message.assert_called_once()
 
-    status = await cache_client.get(str(avatar.id))
-    assert status == "available"
+    refreshed = await db.get(Avatar, avatar.id)
+    await db.refresh(refreshed)
+    assert refreshed.status == AVATAR_STATUS["available"]
+
+
+@pytest.mark.asyncio
+async def test_get_training_status(
+    async_client: AsyncClient,
+    superuser_token_headers: dict[str, str],
+    db: AsyncSession,
+):
+    avatar = await create_random_avatar(db)
+    avatar.status = AVATAR_STATUS["training"]
+    db.add(avatar)
+    await db.commit()
+
+    response = await async_client.post(
+        f"{settings.API_V1_STR}/avatars/{avatar.id}/train/status",
+        headers=superuser_token_headers
+    )
+
+    assert response.status_code == 200
+    assert response.json()["message"] == AVATAR_STATUS["training"]
+
+
+@pytest.mark.asyncio
+async def test_get_training_status_not_found(
+    async_client: AsyncClient,
+    superuser_token_headers: dict[str, str],
+):
+    random_uuid = uuid.uuid4()
+    response = await async_client.post(
+        f"{settings.API_V1_STR}/avatars/{random_uuid}/train/status",
+        headers=superuser_token_headers
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Avatar not found"
 
 
 @pytest.mark.asyncio
@@ -222,14 +257,14 @@ async def test_avatar_permission_denied(
         data={"username": user.email, "password": password},
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
-    assert login_response.status_code == 200
-
     token_info = login_response.json()
-    token_headers = {"Authorization": f"{
-        token_info['token_type']} {token_info['access_token']}"}
+    token_headers = {
+        "Authorization": f"{token_info['token_type']} {token_info['access_token']}"
+    }
 
     response = await async_client.delete(
         f"{settings.API_V1_STR}/avatars/{avatar.id}",
         headers=token_headers
     )
     assert response.status_code in [400, 403]
+

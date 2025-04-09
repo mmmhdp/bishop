@@ -6,13 +6,15 @@ from typing import Optional
 from app.common.logging_service import logger
 from app.user.User import User
 from app.avatar.Avatar import (
-    Avatar, AvatarCreate, AvatarUpdate, AvatarsPublic
+    Avatar,
+    AvatarCreate,
+    AvatarUpdate,
+    AvatarsPublic
 )
 
 from app.common.api_deps import (
     CurrentUser,
     SessionDep,
-    CacheDep,
 )
 
 
@@ -25,7 +27,8 @@ async def create_avatar(
     db_obj = Avatar(
         user_id=user.id,
         name=avatar_create.name,
-        user=user
+        user=user,
+        status="available",
     )
     session.add(db_obj)
     await session.commit()
@@ -93,7 +96,6 @@ async def update_avatar(
 
 async def delete_avatar(
         session: SessionDep,
-        cache_db: CacheDep,
         avatar_id: uuid.UUID
 ) -> None:
     logger.info(f"Deleting avatar {avatar_id}")
@@ -103,28 +105,34 @@ async def delete_avatar(
 
     await session.delete(avatar)
     await session.commit()
-
-    print(cache_db)
-    res = await cache_db.delete(str(avatar_id))
-    print(res)
     return True
 
 
-async def get_training_status(
-    cache_db: CacheDep,
-    avatar_id: uuid.UUID,
-) -> Optional[uuid.UUID]:
-    logger.info(f"Checking training status for avatar {avatar_id}")
-    if await cache_db.exists(str(avatar_id)):
-        value = await cache_db.get(str(avatar_id))
-        return value
-    return None
-
-
 async def set_training_status(
-    cache_db: CacheDep,
+    session: SessionDep,
     avatar_id: uuid.UUID,
     status: str,
 ) -> None:
-    await cache_db.set(str(avatar_id), status)
-    logger.info(f"Set training status for avatar {avatar_id} to {status}")
+    logger.info(f"Setting training status for avatar {avatar_id} to {status}")
+    result = await session.exec(select(Avatar).where(Avatar.id == avatar_id))
+    avatar = result.first()
+    if not avatar:
+        logger.error(f"Avatar {avatar_id} not found")
+        return None
+    avatar.status = status
+    await session.commit()
+    await session.refresh(avatar)
+
+
+async def get_training_status(
+    session: SessionDep,
+    avatar_id: uuid.UUID,
+) -> Optional[str]:
+    logger.info(f"Getting training status for avatar {avatar_id}")
+    result = await session.exec(select(Avatar.status).where(Avatar.id == avatar_id))
+    status = result.first()
+    if not status:
+        logger.error(f"Avatar {avatar_id} not found")
+        return None
+    logger.info(f"Status for avatar {avatar_id} is {status}")
+    return status

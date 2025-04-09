@@ -2,12 +2,12 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 
+from app.common.logging_service import logger
 from app.common.models.SimpleMessage import SimpleMessage
 from app.common.api_deps import (
     CurrentUser,
     SessionDep,
     ProducerDep,
-    CacheDep,
 )
 from app.avatar.Avatar import (
     AvatarCreate,
@@ -70,7 +70,6 @@ async def read_avatar(
 async def create_avatar(
     *,
     session: SessionDep,
-    cache_db: CacheDep,
     current_user: CurrentUser,
     avatar_in: AvatarCreate
 ) -> Avatar:
@@ -82,7 +81,7 @@ async def create_avatar(
     )
 
     await avatar_repository.set_training_status(
-        cache_db=cache_db,
+        session=session,
         avatar_id=new_avatar.id,
         status=AVATAR_STATUS["available"]
     )
@@ -115,7 +114,6 @@ async def update_avatar(
 async def delete_avatar(
     *,
     session: SessionDep,
-    cache_db: CacheDep,
     current_user: CurrentUser,
     avatar_id: uuid.UUID
 ) -> SimpleMessage:
@@ -130,7 +128,6 @@ async def delete_avatar(
 
     await avatar_repository.delete_avatar(
         session=session,
-        cache_db=cache_db,
         avatar_id=avatar_id
     )
     return SimpleMessage(message="Avatar deleted successfully")
@@ -140,7 +137,6 @@ async def delete_avatar(
 async def start_training(
     *,
     session: SessionDep,
-    cache_db: CacheDep,
     current_user: CurrentUser,
     producer: ProducerDep,
     avatar_id: uuid.UUID
@@ -155,7 +151,7 @@ async def start_training(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     current_status = await avatar_repository.get_training_status(
-        cache_db=cache_db,
+        session=session,
         avatar_id=avatar_id
     )
 
@@ -163,7 +159,7 @@ async def start_training(
         return SimpleMessage(message=f"Training in process for avatar {avatar_id}")
 
     await avatar_repository.set_training_status(
-        cache_db=cache_db,
+        session=session,
         avatar_id=avatar_id,
         status=AVATAR_STATUS["training"]
     )
@@ -174,6 +170,12 @@ async def start_training(
         avatar_id=avatar_id
     )
 
+    current_status = await avatar_repository.get_training_status(
+        session=session,
+        avatar_id=avatar_id
+    )
+    logger.info("END of training status check for avatar %s: %s",
+                avatar_id, current_status)
     return SimpleMessage(message=f"Training started for avatar {avatar_id}")
 
 
@@ -181,7 +183,6 @@ async def start_training(
 async def stop_training(
     *,
     session: SessionDep,
-    cache_db: CacheDep,
     current_user: CurrentUser,
     avatar_id: uuid.UUID,
     producer: ProducerDep,
@@ -196,12 +197,14 @@ async def stop_training(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     status = await avatar_repository.get_training_status(
-        cache_db=cache_db,
+        session=session,
         avatar_id=avatar.id
     )
 
     if status == AVATAR_STATUS["available"]:
         return SimpleMessage(message=f"Training stop requested for avatar {avatar_id}")
+
+    logger.info(f"Stopping training for avatar {avatar_id}")
 
     await avatar_broker_service.send_train_stop_message(
         producer=producer,
@@ -209,10 +212,12 @@ async def stop_training(
     )
 
     await avatar_repository.set_training_status(
-        cache_db=cache_db,
+        session=session,
         avatar_id=avatar_id,
         status=AVATAR_STATUS["available"]
     )
+
+    logger.info(f"Training stopped for avatar {avatar_id}")
 
     return SimpleMessage(message=f"Training stop requested for avatar {avatar_id}")
 
@@ -222,17 +227,18 @@ async def get_training_status(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    cache_db: CacheDep,
     avatar_id: uuid.UUID,
 ) -> SimpleMessage:
     """
     Get training status for a specific avatar.
     """
+
+    logger.info(f"Checking training status for avatar {avatar_id}")
     status = await avatar_repository.get_training_status(
-        cache_db=cache_db,
-        avatar_id=avatar_id
+        session=session,
+        avatar_id=avatar_id,
     )
-    print(f"Status: {status}")
+
     if status:
         return SimpleMessage(message=status)
 
