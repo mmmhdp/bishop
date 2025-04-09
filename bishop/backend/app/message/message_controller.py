@@ -1,13 +1,15 @@
-from typing import Any, Optional
+from typing import Any
 import uuid
+import mimetypes
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 
 from app.common.api_deps import (
     SessionDep,
     CurrentUser,
     ProducerDep,
-    CacheDep,
+    S3Dep,
 )
 from app.message.Message import (
     Message,
@@ -17,8 +19,12 @@ from app.message.Message import (
     MessageUpdate
 )
 from app.common.models.SimpleMessage import SimpleMessage
+from app.common.logging_service import logger
+from app.common.config import settings
 from app.message import message_repository
 from app.message import message_broker_service
+from app.broker.broker_utils import get_object_key_from_url
+
 
 router = APIRouter()
 
@@ -137,7 +143,6 @@ async def delete_message(
 async def get_avatar_response(
     *,
     session: SessionDep,
-    chache_db: CacheDep,
     current_user: CurrentUser,
     avatar_id: uuid.UUID,
     chat_id: uuid.UUID,
@@ -154,3 +159,41 @@ async def get_avatar_response(
             status_code=404, detail="Response is not ready yet")
 
     return rsp_msg
+
+
+@router.get("/{rsp_msg_id}/response/dub/")
+async def get_avatar_response_dub_stream(
+    *,
+    session: SessionDep,
+    S3: S3Dep,
+    current_user: CurrentUser,
+    avatar_id: uuid.UUID,
+    chat_id: uuid.UUID,
+    rsp_msg_id: uuid.UUID,
+) -> StreamingResponse:
+
+    rsp_msg = await session.get(Message, rsp_msg_id)
+    if not rsp_msg:
+        raise HTTPException(
+            status_code=422, detail="Response message does not exist")
+
+    if not rsp_msg.text:
+        raise HTTPException(
+            status_code=404, detail="Response is not ready yet")
+
+    if not rsp_msg.dub_url:
+        raise HTTPException(status_code=404, detail="Dub URL is not set")
+
+    try:
+        obj_name = get_object_key_from_url(
+            rsp_msg.dub_url, settings.MINIO_BUCKET)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    try:
+        response = S3.get_object(settings.MINIO_BUCKET, obj_name)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch audio: {str(e)}")
+
+    return StreamingResponse(response, media_type="audio/mpeg")
