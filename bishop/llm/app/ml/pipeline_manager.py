@@ -15,6 +15,6 @@ def execute_task_pipeline(task_data):
         logger.info("Executing llm training pipeline")
         process_train_task(task_data)
 
-    elif curr_event == "inference_respose":
+    elif curr_event == "inference_response":
         logger.info("Executing llm inference pipeline")
         process_inference_task(task_data)

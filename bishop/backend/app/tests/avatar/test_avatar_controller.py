@@ -160,6 +160,7 @@ async def test_start_training_avatar(
     assert response.status_code == 200
     assert response.json()["message"] == f"Training started for avatar {
         avatar.id}"
+
     mock_send_train_start_message.assert_called_once()
 
     status = await cache_client.get(str(avatar.id))

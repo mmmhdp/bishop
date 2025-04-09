@@ -65,3 +65,26 @@ async def create_message(
     await session.refresh(rsp_msg_box)
 
     return message, rsp_msg_box
+
+
+async def update_message_response(
+    *,
+    session: SessionDep,
+    message_id: uuid.UUID,
+    text: str,
+    dub_url: str | None = None,
+) -> Message | None:
+    statement = select(Message).where(Message.id == message_id)
+    result = await session.exec(statement)
+    message = result.one_or_none()
+
+    if not message:
+        return None
+
+    message.text = text
+    message.dub_url = dub_url
+
+    session.add(message)
+    await session.commit()
+    await session.refresh(message)
+    return message

@@ -43,6 +43,7 @@ class KafkaMessageConsumer:
                 logger.exception(f"Consumer error: {e}. Restarting after {
                                  self.restart_delay} seconds...")
                 await asyncio.sleep(self.restart_delay)
+
             finally:
                 if self.consumer:
                     await self.consumer.stop()

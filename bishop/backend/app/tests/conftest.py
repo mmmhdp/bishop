@@ -39,10 +39,13 @@ async def cache_client() -> AsyncRedis:
 
 @pytest_asyncio.fixture(scope="function")
 async def async_client() -> AsyncClient:
-    transport = ASGITransport(app=app)
+    await app.router.startup()
 
+    transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
         yield ac
+
+    await app.router.shutdown()
 
 
 @pytest.fixture(scope="function")
