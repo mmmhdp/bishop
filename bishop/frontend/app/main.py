@@ -1,4 +1,6 @@
+import base64
 from starlette.requests import Request
+import starlette.responses as responses
 from dataclasses import dataclass, asdict
 import asyncio
 from fasthtml.common import *
@@ -662,19 +664,45 @@ async def chat_create(avatar_id: str, chat_create_info: ChatCreateInfo, sess):
     return chats_list
 
 
+async def render_message_widget(msg: dict, avatar_id: str, chat_id: str, sess):
+    role = "Avatar" if msg["is_generated"] else "User"
+    blocks = [P(f"{role}: {msg['text']}")]
+
+    if msg["is_generated"] and msg.get("dub_url"):
+        async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
+            try:
+                audio_res = await client.get(
+                    f"{BACKEND_URL}/avatars/{avatar_id}/chat/{
+                        chat_id}/msgs/{msg['id']}/response/dub/"
+                )
+                audio_res.raise_for_status()
+                b64 = base64.b64encode(audio_res.content).decode("ascii")
+                blocks.append(
+                    Audio(
+                        controls=True,
+                        autoplay=False,
+                        preload="auto",
+                        src=f"data:audio/mpeg;base64,{b64}"
+                    )
+                )
+            except Exception as e:
+                logger.warning(f"Could not load audio for message {
+                               msg['id']}: {e}")
+                blocks.append(P("Audio unavailable."))
+
+    return Div(*blocks, cls=f"chat-message-{'bot' if msg['is_generated'] else 'user'}")
+
+
 @rt("/avatar/{avatar_id}/chat/{chat_id}/messages/")
 async def chat_messages_view(avatar_id: str, chat_id: str, sess):
     async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
         url = f"{BACKEND_URL}/avatars/{avatar_id}/chat/{chat_id}/msgs/"
         res = await client.get(url)
-        print(res.json())
         messages = res.json().get("data", [])[-10:] if res.status_code == 200 else []
 
     message_box = Div(
         *[
-            Div(
-                P(f"Avatar : {msg['text']}"),
-            )
+            await render_message_widget(msg, avatar_id, chat_id, sess)
             for msg in messages
         ],
         id="chat-history",
@@ -744,13 +772,33 @@ async def poll_response(avatar_id: str, chat_id: str, rsp_msg_id: str, sess):
 
             if res.status_code == 200:
                 msg = res.json()
-                dub_url = msg.get['dub_url']
+                text = msg.get("text", "")
 
-                return Div(
-                    P(f"Avatar: {msg['text']}"),
-                    Audio(controls=True, src=msg['dub_url']),
-                    cls="chat-message-bot"
-                )
+                try:
+                    audio_res = await client.get(
+                        f"{BACKEND_URL}/avatars/{avatar_id}/chat/{
+                            chat_id}/msgs/{rsp_msg_id}/response/dub/"
+                    )
+                    audio_res.raise_for_status()
+
+                    b64 = base64.b64encode(audio_res.content).decode("ascii")
+                    return Div(
+                        P(f"Avatar: {text}"),
+                        Audio(
+                            controls=True,
+                            autoplay=False,
+                            preload="auto",
+                            src=f"data:audio/mpeg;base64,{b64}"
+                        ),
+                        cls="chat-message-bot"
+                    )
+                except Exception as e:
+                    logger.error(f"Error fetching audio: {e}")
+                    return Div(
+                        P(f"Avatar: {text}"),
+                        P("Audio unavailable."),
+                        cls="chat-message-bot"
+                    )
 
     return Div(
         P("Avatar is still thinking..."),
