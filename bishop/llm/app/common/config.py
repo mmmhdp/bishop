@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     MINIO_SECRET_KEY: str
     MINIO_BUCKET: str
     MINIO_USE_SSL: bool = False
+    MINIO_CACHE_DIR: str
 
     # Redis Configuration
     REDIS_HOST: str
