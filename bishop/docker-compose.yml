@@ -113,6 +113,7 @@ services:
       - REDIS_HOST_PASSWORD=${REDIS_HOST_PASSWORD?Variable not set}
       - MINIO_ROOT_USER={MINIO_ROOT_USER?Variable not set}
       - MINIO_ROOT_PASSWORD={MINIO_ROOT_PASSWORD?Variable not set}
+      - MINIO_CACHE_DIR=${MINIO_CACHE_DIR?Variable not set}
 
   sound:
     image: '${DOCKER_IMAGE_SOUND?Variable not set}:${TAG-latest}'
