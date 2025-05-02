@@ -14,8 +14,8 @@ def process_inference_task(task_data):
     message_id = task_data["message_id"]
     text = task_data["text"]
 
-    generated_text = "dummy_text"
-    generated_dub_url = "app/sample.mp3"
+    generated_text = "Hello my friend. I am not a robot. I am a human being. At least I think so."
+    generated_dub_url = None
 
     logger.info(f"Processing inference task with task_data: {task_data}")
 

@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     KAFKA_TOPIC_LLM_INFERENCE: str = "llm-inference"
     KAFKA_TOPIC_LLM_TRAIN: str = "llm-train"
     KAFKA_TOPIC_SOUND_INFERENCE: str = "sound-inference"
-    KAFKA_TOPIC_SOUND_TRAIN: str = "sound-train"
+    KAFKA_TOPIC_SAVE_RESPONSE_DUB: str = "save-response-dub"
     KAFKA_HEALTH_CHECK_TOPIC: str = "health-check-sound"
 
     # MinIO (S3-compatible storage) Configuration

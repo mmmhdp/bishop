@@ -41,6 +41,7 @@ message_manager_consumer = MessageManagerConsumer(
     bootstrap_servers=settings.KAFKA_BROKER_URL,
     topics=[
         settings.KAFKA_TOPIC_SAVE_RESPONSE,
+        settings.KAFKA_TOPIC_SAVE_RESPONSE_DUB,
     ],
     group_id=settings.KAFKA_GROUP_ID
 )

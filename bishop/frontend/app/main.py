@@ -497,8 +497,16 @@ async def avatar_train_widget(avatar_id: str, sess):
         #    hx_swap="outerHTML"
         # ),
 
+        H2("Train Avatar"),
+        P("Upload files to train your avatar. We will extract text from the files and use it for training."),
+        P("If you want to use this audio for voice synthesis, please select the appropriate option and use a .wav extension."),
         Form(
-            Input(type="text", name="type", value="default"),
+            Select(name="type")(
+                Option("Extract text from this file for training",
+                       value="basic", selected=True),
+                Option("Use this audio for voice syntesis",
+                       value="voice_syntesis")
+            ),
             Input(type="file", name="files", multiple=True),
             Button("Upload File"),
             hx_post=f"/avatar/{avatar_id}/train",
@@ -764,23 +772,24 @@ async def send_message(avatar_id: str, chat_id: str, text: str, sess):
 @rt("/avatar/{avatar_id}/chat/{chat_id}/poll_response/{rsp_msg_id}/")
 async def poll_response(avatar_id: str, chat_id: str, rsp_msg_id: str, sess):
     async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
-        for _ in range(5):
-            await asyncio.sleep(0.5)
-            url = f"{
+        for _ in range(3):
+            await asyncio.sleep(2)
+
+            msg_url = f"{
                 BACKEND_URL}/avatars/{avatar_id}/chat/{chat_id}/msgs/{rsp_msg_id}/response/"
-            res = await client.get(url)
+            res = await client.get(msg_url)
+            if res.status_code != 200:
+                continue
 
-            if res.status_code == 200:
-                msg = res.json()
-                text = msg.get("text", "")
+            msg = res.json()
+            text = msg.get("text", "")
 
+            audio_url = f"{
+                BACKEND_URL}/avatars/{avatar_id}/chat/{chat_id}/msgs/{rsp_msg_id}/response/dub/"
+            audio_res = await client.get(audio_url)
+
+            if audio_res.status_code == 200:
                 try:
-                    audio_res = await client.get(
-                        f"{BACKEND_URL}/avatars/{avatar_id}/chat/{
-                            chat_id}/msgs/{rsp_msg_id}/response/dub/"
-                    )
-                    audio_res.raise_for_status()
-
                     b64 = base64.b64encode(audio_res.content).decode("ascii")
                     return Div(
                         P(f"Avatar: {text}"),
@@ -788,17 +797,13 @@ async def poll_response(avatar_id: str, chat_id: str, rsp_msg_id: str, sess):
                             controls=True,
                             autoplay=False,
                             preload="auto",
-                            src=f"data:audio/mpeg;base64,{b64}"
+                            src=f"data:audio/x-wav;base64,{b64}"
                         ),
                         cls="chat-message-bot"
                     )
                 except Exception as e:
-                    logger.error(f"Error fetching audio: {e}")
-                    return Div(
-                        P(f"Avatar: {text}"),
-                        P("Audio unavailable."),
-                        cls="chat-message-bot"
-                    )
+                    logger.error(f"Error decoding audio content: {e}")
+                    break
 
     return Div(
         P("Avatar is still thinking..."),

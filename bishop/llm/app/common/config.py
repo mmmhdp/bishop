@@ -23,10 +23,8 @@ class Settings(BaseSettings):
     KAFKA_GROUP_ID: str = "llm"
     KAFKA_TOPIC_LLM_INFERENCE: str = "llm-inference"
     KAFKA_TOPIC_LLM_TRAIN: str = "llm-train"
-    KAFKA_TOPIC_SOUND_INFERENCE: str = "sound-inference"
-    KAFKA_TOPIC_SOUND_TRAIN: str = "sound-train"
     KAFKA_TOPIC_SAVE_RESPONSE: str = "save-response"
-    KAFKA_HEALTH_CHECK_TOPIC: str = "health-check-llm"
+    KAFKA_LLM_HEALTH_CHECK_TOPIC: str = "health-check-llm"
 
     # MinIO (S3-compatible storage) Configuration
     MINIO_ENDPOINT: str

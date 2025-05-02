@@ -24,18 +24,38 @@ class MessageManagerConsumer(KafkaMessageConsumer):
     async def process_message(self, msg):
         try:
             task_data = json.loads(msg.value.decode("utf-8"))
+            event = task_data["event"]
             logger.info(f"Received task from {msg.topic}: {task_data}")
-
-            async with db_context() as session:
-                message_id = task_data["message_id"]
-                generated_text = task_data["generated_text"]
-                dub_url = task_data["dub_url"]
-                await message_repository.update_message_response(
-                    session=session,
-                    message_id=message_id,
-                    text=generated_text,
-                    dub_url=dub_url
-                )
-
         except json.JSONDecodeError:
             logger.error("Failed to decode JSON message")
+            return
+
+        async with db_context() as session:
+            message_id = task_data["message_id"]
+
+            db_message = await message_repository.get_message_by_id(
+                session=session,
+                message_id=message_id
+            )
+            if db_message is None:
+                logger.warning(f"Message with ID {message_id} not found.")
+                return
+
+            if event == "save_response":
+                db_message.text = task_data.get(
+                    "generated_text", db_message.text
+                )
+                db_message.text_status = "ready"
+
+            elif event == "save_response_dub":
+                db_message.text = task_data.get(
+                    "generated_text", db_message.text
+                )
+                db_message.text_status = "ready"
+                db_message.dub_url = task_data.get(
+                    "dub_url", db_message.dub_url
+                )
+                db_message.dub_status = "ready"
+
+            session.add(db_message)
+            await session.commit()
