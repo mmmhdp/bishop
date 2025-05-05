@@ -1,1 +1,1 @@
-# from .Transcribator import transcribator
+from app.media_converter.Transcribator import transcribator

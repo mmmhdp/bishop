@@ -1,9 +1,10 @@
+import os
+import uuid
+from pathlib import Path
+
 import whisper
 from moviepy import VideoFileClip
-import uuid
-import os
-from app.user.User import User
-from sqlmodel.ext.asyncio.session import AsyncSession
+
 
 class VideoFileClipWithContext:
     def __init__(self, video_path):
@@ -33,34 +34,25 @@ class AudioFileClipWithContext:
             self.audio_clip.close()
 
 
-# class Transcribator:
-#     def __init__(self, model_type: str = "base"):
-#         self.model_type = model_type
-#         self.model = whisper.load_model(self.model_type)
+class Transcribator:
+    def __init__(self, model_type: str = "base"):
+        self.model_type = model_type
+        self.model = whisper.load_model(self.model_type)
 
-#     def transcribe_video(self, file_path: str):
-#         with VideoFileClipWithContext("test_video.mp4") as video:
-#             with AudioFileClipWithContext(video) as audio:
-#                     tmp_audio_file_name = "tmp_audio_" + str(uuid.uuid4()) + ".mp3"
-#                     audio.write_audiofile(tmp_audio_file_name)
-#                     transcription_uuid = self.transcribe_audio_impl(tmp_audio_file_name)
-#                     os.remove(tmp_audio_file_name)
-#         return transcription_uuid
-    
-#     async def transcribe_audio_and_save_in_db(self, file_path: str, cur_user: User, session: AsyncSession) -> Transcription:
-#         result = self.transcribe_audio_impl(file_path)
-#         transcription = await transcription_repository.create_transcription(
-#             session=session,
-#             text=result,
-#             original_source=SourceType.AUDIO,
-#             owner_id=cur_user.id,
-#             owner=cur_user
-#             )
-#         return transcription
+    def transcribe_audio(self, file_path: Path) -> str:
+        result = self.model.transcribe(str(file_path))
+        return result["text"]
 
-    
-#     def transcribe_audio_impl(self, file_path: str) -> str:
-#         result = self.model.transcribe(file_path)
-#         return result["text"]
-    
-# transcribator = Transcribator()
+    def transcribe_video(self, file_path: Path) -> str:
+        with VideoFileClipWithContext(str(file_path)) as video:
+            with AudioFileClipWithContext(video) as audio:
+                tmp_audio_file_name = f"tmp_audio_{uuid.uuid4()}.mp3"
+                audio.write_audiofile(tmp_audio_file_name, verbose=False, logger=None)
+                try:
+                    text = self.transcribe_audio(Path(tmp_audio_file_name))
+                finally:
+                    os.remove(tmp_audio_file_name)
+        return text
+
+
+transcribator = Transcribator()
