@@ -7,7 +7,6 @@ def main():
         bootstrap_servers=settings.KAFKA_BROKER_URL,
         topics=[
             settings.KAFKA_HEALTH_CHECK_TOPIC,
-            settings.KAFKA_TOPIC_SOUND_TRAIN,
             settings.KAFKA_TOPIC_SOUND_INFERENCE,
         ],
         group_id=settings.KAFKA_GROUP_ID

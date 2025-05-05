@@ -6,7 +6,7 @@ def main():
     consumer = KafkaMessageConsumer(
         bootstrap_servers=settings.KAFKA_BROKER_URL,
         topics=[
-            settings.KAFKA_HEALTH_CHECK_TOPIC,
+            settings.KAFKA_LLM_HEALTH_CHECK_TOPIC,
             settings.KAFKA_TOPIC_LLM_INFERENCE,
             settings.KAFKA_TOPIC_LLM_TRAIN,
         ],

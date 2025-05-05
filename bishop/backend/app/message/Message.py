@@ -10,6 +10,8 @@ class MessageBase (SQLModel):
     text: Optional[str] = Field(default=None, sa_column=Column(Text))
     is_generated: bool = Field(default=False)
     dub_url: Optional[str] = Field(default=None, sa_column=Column(Text))
+    text_status: Optional[str] = Field(default=None, sa_column=Column(Text))
+    dub_status: Optional[str] = Field(default=None, sa_column=Column(Text))
 
 
 class MessageCreate(SQLModel):
@@ -20,6 +22,8 @@ class MessageCreate(SQLModel):
 
 class MessageUpdate (SQLModel):
     text: str = Field(default=None, sa_column=Column(Text))
+    text_status: Optional[str] = Field(default=None, sa_column=Column(Text))
+    dub_status: Optional[str] = Field(default=None, sa_column=Column(Text))
 
 
 if TYPE_CHECKING:

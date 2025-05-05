@@ -1,12 +1,18 @@
 import uuid
+from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, SQLModel, Relationship, Column, ForeignKey
 from sqlalchemy.types import Text, Boolean
 
 
+class TRAINIGN_MATERIAL_TYPE(str, Enum):
+    basic = "basic"
+    voice_syntesis = "voice_syntesis"
+
+
 class TrainMaterialBase(SQLModel):
-    type: str
+    type: TRAINIGN_MATERIAL_TYPE
 
 
 class TrainMaterialCreate(TrainMaterialBase):
@@ -25,7 +31,8 @@ class TrainMaterial(TrainMaterialBase, table=True):
     is_trained_on: bool = Field(sa_column=Column(
         Boolean, nullable=False, default=False))
 
-    type: str = Field(sa_column=Column(Text, nullable=False))
+    type: str = Field(
+        sa_column=Column(Text, nullable=False))
 
     avatar_id: uuid.UUID = Field(
         sa_column=Column(ForeignKey(

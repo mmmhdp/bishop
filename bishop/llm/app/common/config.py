@@ -20,13 +20,11 @@ class Settings(BaseSettings):
 
     # Kafka Configuration
     KAFKA_BROKER_URL: str
-    KAFKA_GROUP_ID: str = "pipelines"
-    KAFKA_TOPIC_LLM_INFERENCE: str = "pipelines-inference"
-    KAFKA_TOPIC_LLM_TRAIN: str = "pipelines-train"
-    KAFKA_TOPIC_SOUND_INFERENCE: str = "sound-inference"
-    KAFKA_TOPIC_SOUND_TRAIN: str = "sound-train"
+    KAFKA_GROUP_ID: str = "llm"
+    KAFKA_TOPIC_LLM_INFERENCE: str = "llm-inference"
+    KAFKA_TOPIC_LLM_TRAIN: str = "llm-train"
     KAFKA_TOPIC_SAVE_RESPONSE: str = "save-response"
-    KAFKA_HEALTH_CHECK_TOPIC: str = "health-check-pipelines"
+    KAFKA_LLM_HEALTH_CHECK_TOPIC: str = "health-check-llm"
 
     # Add a list of complex topics
     KAFKA_COMPLEX_TOPICS: List = [

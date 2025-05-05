@@ -10,8 +10,10 @@ from starlette.datastructures import UploadFile
 
 @pytest.fixture
 def dummy_upload_file():
-    file = UploadFile(filename="sample.mp3",
-                      file=io.BytesIO(b"fake audio content"))
+    file = UploadFile(
+        filename="sample.mp3",
+        file=io.BytesIO(b"fake audio content")
+    )
     return file
 
 

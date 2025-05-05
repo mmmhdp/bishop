@@ -1,7 +1,6 @@
 from typing import Any
 import uuid
-import mimetypes
-
+import asyncio
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
@@ -170,19 +169,41 @@ async def get_avatar_response_dub_stream(
     avatar_id: uuid.UUID,
     chat_id: uuid.UUID,
     rsp_msg_id: uuid.UUID,
+    producer: ProducerDep,
 ) -> StreamingResponse:
 
     rsp_msg = await session.get(Message, rsp_msg_id)
+
+    logger.info(f"Response message: {rsp_msg}")
     if not rsp_msg:
         raise HTTPException(
             status_code=422, detail="Response message does not exist")
 
-    if not rsp_msg.text:
+    if rsp_msg.text_status != "ready":
         raise HTTPException(
             status_code=404, detail="Response is not ready yet")
 
-    if not rsp_msg.dub_url:
-        raise HTTPException(status_code=404, detail="Dub URL is not set")
+    if not rsp_msg.dub_status:
+        raise HTTPException(
+            status_code=500, detail=f"Dub status is corrupted: {rsp_msg.dub_status}")
+
+    elif rsp_msg.dub_status == "pending":
+        await message_broker_service.generate_dub_for_message(
+            producer=producer,
+            message_id=rsp_msg.id,
+            gen_message=rsp_msg.text
+        )
+        rsp_msg = await message_repository.update_message_response(
+            session=session,
+            message_id=rsp_msg.id,
+            dub_status="processing"
+        )
+        raise HTTPException(
+            status_code=404, detail="Dub generation called first time. Wait for completion")
+
+    elif rsp_msg.dub_status == "processing":
+        raise HTTPException(
+            status_code=404, detail="Dub URL is in processing and not set yet")
 
     try:
         obj_name = get_object_key_from_url(
