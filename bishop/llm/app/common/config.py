@@ -20,13 +20,19 @@ class Settings(BaseSettings):
 
     # Kafka Configuration
     KAFKA_BROKER_URL: str
-    KAFKA_GROUP_ID: str = "llm"
-    KAFKA_TOPIC_LLM_INFERENCE: str = "llm-inference"
-    KAFKA_TOPIC_LLM_TRAIN: str = "llm-train"
+    KAFKA_GROUP_ID: str = "pipelines"
+    KAFKA_TOPIC_LLM_INFERENCE: str = "pipelines-inference"
+    KAFKA_TOPIC_LLM_TRAIN: str = "pipelines-train"
     KAFKA_TOPIC_SOUND_INFERENCE: str = "sound-inference"
     KAFKA_TOPIC_SOUND_TRAIN: str = "sound-train"
     KAFKA_TOPIC_SAVE_RESPONSE: str = "save-response"
-    KAFKA_HEALTH_CHECK_TOPIC: str = "health-check-llm"
+    KAFKA_HEALTH_CHECK_TOPIC: str = "health-check-pipelines"
+
+    # Add a list of complex topics
+    KAFKA_COMPLEX_TOPICS: List = [
+        KAFKA_TOPIC_LLM_INFERENCE,
+        KAFKA_TOPIC_LLM_TRAIN,
+    ]
 
     # MinIO (S3-compatible storage) Configuration
     MINIO_ENDPOINT: str
@@ -34,7 +40,7 @@ class Settings(BaseSettings):
     MINIO_SECRET_KEY: str
     MINIO_BUCKET: str
     MINIO_USE_SSL: bool = False
-    MINIO_CACHE_DIR: str
+    MINIO_CACHE_DIR: str = "app/ml/data/raw"
 
     # Redis Configuration
     REDIS_HOST: str
@@ -45,9 +51,23 @@ class Settings(BaseSettings):
     # Secret for internal use (e.g., signing payloads)
     SECRET_KEY: str = secrets.token_urlsafe(32)
 
+    # Kaggle API Configuration
+    IS_KAGGLE: bool = True
+    KAGGLE_AUTH_NAME: str = "atsamaz"
+    KAGGLE_DATASET_TITLE: str = "avatar-finetuning-dataset"
+    KAGGLE_KERNEL_TITLE: str = "avatar-finetuning"
+    KAGGLE_KERNEL_RUN_TIMEOUT: int = 12600
+    KAGGLE_FINETUNE_PATH: str = "app/ml/modeling/kaggle_finetune.py"
+
+    # Data processing configuration
+    PROCESSED_DATA_DIR: str = "app/ml/data/processed"
+    RAW_DATA_DIR: str = MINIO_CACHE_DIR
+    INTERIM_DATA_DIR: str = "app/ml/data/interim"
+    MODEL_DIR: str = "app/ml/models"
+
     @computed_field
     @property
-    def MINIO_URL(self) -> HttpUrl:
+    def MINIO_URL(self) -> str:
         scheme = "https" if self.MINIO_USE_SSL else "http"
         return f"{scheme}://{self.MINIO_ENDPOINT}"
 
