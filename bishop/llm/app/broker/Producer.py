@@ -14,8 +14,7 @@ class KafkaMessageProducer:
         if err is not None:
             logger.error(f"Message delivery failed: {err}")
         else:
-            logger.info(f"Message delivered to {msg.topic()} [{
-                        msg.partition()}] at offset {msg.offset()}")
+            logger.info(f"Message delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}")
 
     def send(self, topic, data: dict):
         try:

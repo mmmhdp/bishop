@@ -1,7 +1,11 @@
-from confluent_kafka import Consumer, KafkaError
 import json
 import time
+
+from confluent_kafka import Consumer, KafkaError
+
+from app.common.config import settings
 from app.common.logging_service import logger
+from app.infrastructure.process_manager import is_process_running, run_task_in_process
 from app.ml.pipeline_manager import execute_task_pipeline
 
 
@@ -31,8 +35,7 @@ class KafkaMessageConsumer:
 
                     if msg.error():
                         if msg.error().code() == KafkaError._PARTITION_EOF:
-                            logger.info(
-                                f"Reached end of partition for {msg.topic()}")
+                            logger.info(f"Reached end of partition for {msg.topic()}")
                         else:
                             logger.error(f"Kafka error: {msg.error()}")
                         continue
@@ -43,8 +46,7 @@ class KafkaMessageConsumer:
                 logger.info("Consumer interrupted, shutting down...")
                 break
             except Exception as e:
-                logger.exception(f"Unexpected error: {e}. Restarting after {
-                                 self.restart_delay} seconds...")
+                logger.exception(f"Unexpected error: {e}. Restarting after {self.restart_delay} seconds...")
                 time.sleep(self.restart_delay)
                 logger.info("Restarting consumer...")
             finally:
@@ -55,7 +57,17 @@ class KafkaMessageConsumer:
         try:
             task_data = json.loads(msg.value().decode('utf-8'))
             logger.info(f"Received task from {msg.topic()}: {task_data}")
-            execute_task_pipeline(task_data)
+
+            if msg.topic() in settings.KAFKA_COMPLEX_TOPICS:
+                if is_process_running():
+                    logger.info("Active task found. Skipping message commit.")
+                    return
+                logger.info("Executing pipeline in new process")
+                run_task_in_process(execute_task_pipeline, task_data)
+            else:
+                logger.info("Executing pipeline")
+                execute_task_pipeline(task_data)
+
             consumer.commit(msg)
         except json.JSONDecodeError:
             logger.error("Failed to decode JSON message")
