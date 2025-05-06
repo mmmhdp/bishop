@@ -29,7 +29,7 @@ def finetune(
 
     model = GPT2LMHeadModel.from_pretrained(model_name_or_path).to(device)
 
-    dataset = load_dataset("text", data_files={"train": dataset_path})
+    dataset = load_dataset("text", data_files={"train": str(dataset_path)})
     tokenized_datasets = dataset.map(
         lambda examples: tokenizer(
             examples["text"], truncation=True, padding="max_length", max_length=512
@@ -59,7 +59,12 @@ def finetune(
         data_collator=data_collator,
     )
 
-    trainer.train()
+    #trainer.train()
+    print("Train"
+          "Train"
+          "Train"
+          "Train"
+          "Train")
 
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)

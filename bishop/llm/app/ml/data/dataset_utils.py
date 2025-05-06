@@ -1,5 +1,8 @@
+import random
+import re
 from pathlib import Path
 from typing import List
+from unicodedata import normalize
 
 from tqdm import tqdm
 
@@ -16,7 +19,7 @@ TEXT_FORMATS = {"txt", "csv", "json"}
 
 def download_data(
         s3_urls: List[Path],
-        output_dir: Path = settings.RAW_DATA_DIR,
+        output_dir: Path = Path(settings.RAW_DATA_DIR),
 ) -> List[Path]:
     """
     Uploading files from S3 to a local directory.
@@ -35,13 +38,13 @@ def download_data(
         except Exception as e:
             logger.error(f"Error downloading {s3_url}: {e}")
 
-    logger.success(f"Processing dataset complete. Files saved to {output_dir}")
+    logger.info(f"Processing dataset complete. Files saved to {output_dir}")
     return local_files
 
 
 def convert_non_text_to_text(
-    input_paths: List[Path],
-    output_dir: Path = settings.INTERIM_DATA_DIR
+        input_paths: List[Path],
+        output_dir: Path = Path(settings.INTERIM_DATA_DIR),
 ) -> List[Path]:
     """
     Converts audio/video files to text and saves them as .txt files.
@@ -58,15 +61,13 @@ def convert_non_text_to_text(
 
         try:
             if ext in AUDIO_FORMATS:
-                text = transcribator.transcribe_audio(path)
+                out_path = transcribator.transcribe_audio(path, output_dir)
             elif ext in VIDEO_FORMATS:
-                text = transcribator.transcribe_video(path)
+                out_path = transcribator.transcribe_video(path, output_dir)
             else:
                 logger.warning(f"Skipping unsupported file type: {path.name}")
                 continue
 
-            out_path = output_dir / (path.stem + ".txt")
-            out_path.write_text(text, encoding="utf-8")
             output_files.append(out_path)
 
         except Exception as e:
@@ -75,25 +76,76 @@ def convert_non_text_to_text(
     return output_files
 
 
+def _clean_text(text: str) -> str:
+    text = re.sub(r"<[^>]+>", "", text)
+    text = normalize("NFKC", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _split_into_chunks(text: str, max_len: int = 1000, min_len: int = 50) -> list[str]:
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+
+    rough_chunks = re.split(r"\n{2,}|\.\s", text)
+    refined_chunks = []
+
+    for chunk in rough_chunks:
+        chunk = chunk.strip()
+        if len(chunk) < min_len:
+            continue
+
+        if not re.search(r"[.,!?…]", chunk):
+            i = 0
+            while i < len(chunk):
+                max_rand_len = min(max_len, len(chunk) - i)
+                if max_rand_len < min_len:
+                    break
+                rand_len = random.randint(min_len, min(max_len, len(chunk) - i))
+                part = chunk[i:i + rand_len].strip()
+                if len(part) >= min_len:
+                    refined_chunks.append(part)
+                i += rand_len
+            continue
+
+        while len(chunk) > max_len:
+            split_idx = chunk.rfind(" ", 0, max_len)
+            if split_idx == -1:
+                split_idx = max_len
+            part = chunk[:split_idx].strip()
+            if len(part) >= min_len:
+                refined_chunks.append(part)
+            chunk = chunk[split_idx:].strip()
+        if len(chunk) >= min_len:
+            refined_chunks.append(chunk)
+
+    return refined_chunks
+
+
 def build_dataset(
-    input_dir: Path = settings.INTERIM_DATA_DIR,
-    output_file: Path = settings.PROCESSED_DATA_DIR / "dataset.txt"
+    input_dir: Path = Path(settings.INTERIM_DATA_DIR),
+    output_file: Path = Path(settings.PROCESSED_DATA_DIR) / "dataset.txt",
 ) -> Path:
     """
-    Combine all .txt files into a single file for fine-tuning.
-
-    :param input_dir: Directory with .txt files.
-    :param output_file: Path to the output dataset file.
-    :return: Path to the resulting dataset.
+    Build a clean dataset for fine-tuning.
     """
     output_file.parent.mkdir(parents=True, exist_ok=True)
-
     text_files = list(input_dir.glob("*.txt"))
-    with output_file.open("w", encoding="utf-8") as f_out:
-        for file in text_files:
-            text = file.read_text(encoding="utf-8").strip()
-            if text:
-                f_out.write(text + "\n")
 
-    logger.success(f"Dataset saved at {output_file}")
+    all_chunks = []
+
+    for file in text_files:
+        raw_text = file.read_text(encoding="utf-8")
+        if not raw_text.strip():
+            continue
+        cleaned = _clean_text(raw_text)
+        chunks = _split_into_chunks(cleaned)
+        all_chunks.extend(chunks)
+
+    unique_chunks = list(dict.fromkeys(all_chunks))
+
+    with output_file.open("w", encoding="utf-8") as f_out:
+        for chunk in unique_chunks:
+            f_out.write(chunk + "\n")
+
+    logger.info(f"Cleaned dataset with {len(unique_chunks)} samples saved at {output_file}")
     return output_file

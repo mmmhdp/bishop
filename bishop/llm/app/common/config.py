@@ -1,15 +1,16 @@
 import secrets
 import warnings
-from typing import Literal, Optional, List
+from pathlib import Path
+from typing import Literal, List, ClassVar
 
-from pydantic import HttpUrl, computed_field, model_validator
+from pydantic import computed_field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file="../.env",
+        env_file=Path(__file__).resolve().parent.parent.parent.parent / ".env",
         env_ignore_empty=True,
         extra="ignore",
     )
@@ -17,6 +18,7 @@ class Settings(BaseSettings):
     # Basic configuration
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     SERVICE_NAME: str = "ml-service"
+    BASE_DIR: ClassVar = Path(__file__).resolve().parent.parent.parent
 
     # Kafka Configuration
     KAFKA_BROKER_URL: str
@@ -38,7 +40,7 @@ class Settings(BaseSettings):
     MINIO_SECRET_KEY: str
     MINIO_BUCKET: str
     MINIO_USE_SSL: bool = False
-    MINIO_CACHE_DIR: str = "app/ml/data/raw"
+    MINIO_CACHE_DIR: Path = BASE_DIR / "app/ml/data/raw"
 
     # Redis Configuration
     REDIS_HOST: str
@@ -50,18 +52,18 @@ class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
 
     # Kaggle API Configuration
-    IS_KAGGLE: bool = True
+    IS_KAGGLE: bool = False
     KAGGLE_AUTH_NAME: str = "atsamaz"
     KAGGLE_DATASET_TITLE: str = "avatar-finetuning-dataset"
     KAGGLE_KERNEL_TITLE: str = "avatar-finetuning"
     KAGGLE_KERNEL_RUN_TIMEOUT: int = 12600
-    KAGGLE_FINETUNE_PATH: str = "app/ml/modeling/kaggle_finetune.py"
+    KAGGLE_FINETUNE_PATH: Path = BASE_DIR / "app/ml/modeling/kaggle_finetune.py"
 
     # Data processing configuration
-    PROCESSED_DATA_DIR: str = "app/ml/data/processed"
-    RAW_DATA_DIR: str = MINIO_CACHE_DIR
-    INTERIM_DATA_DIR: str = "app/ml/data/interim"
-    MODEL_DIR: str = "app/ml/models"
+    PROCESSED_DATA_DIR: Path = BASE_DIR / "app/ml/data/processed"
+    RAW_DATA_DIR: Path = MINIO_CACHE_DIR
+    INTERIM_DATA_DIR: Path = BASE_DIR / "app/ml/data/interim"
+    MODEL_DIR: Path = BASE_DIR / "app/ml/models"
 
     @computed_field
     @property

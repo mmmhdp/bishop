@@ -12,7 +12,7 @@ from transformers import (
 def main():
     os.environ["WANDB_DISABLED"] = "true"
 
-    dataset_path = "/kaggle/input/sermons/dataset.txt"
+    dataset_path = "/kaggle/input/<<DATASET_PATH>>"
     model_name_or_path = "ai-forever/rugpt3medium_based_on_gpt2"
     output_dir = "/kaggle/working/finetuned_model"
 
