@@ -42,12 +42,15 @@ workspace "Bishop" "Train your own ai-avatar" {
 
         u -> bp.ui "Uses interface via browser for working with ai-powered avatars"
         bp.ui -> bp.bs "Leverage logic via API"
+        bp.ui -> bp.blob_db "Extract generated data"
         bp.bs -> bp.main_db "Store necessary metadata"
         bp.bs -> bp.logs_db "Fill with logs"
+        bp.ms -> bp.logs_db "Fill with logs"
         bp.bs -> bp.blob_db "Save train data and retrieve generated data"
         bp.bs -> bp.mb "Push task for train or inference"
         bp.mb -> bp.ms "Pooling task for inference or train"
         bp.ms -> bp.blob_db "Retrieve train data, save model checkpoints and generated data"
+        bp.ms -> bp.main_db "Update avatar statuses and save metadata"
     }
 
     views {

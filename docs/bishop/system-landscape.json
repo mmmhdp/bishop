@@ -6,7 +6,7 @@
   "documentation" : { },
   "id" : 1,
   "lastModifiedAgent" : "structurizr-ui",
-  "lastModifiedDate" : "2025-03-18T13:50:36Z",
+  "lastModifiedDate" : "2025-05-16T13:35:46Z",
   "model" : {
     "people" : [ {
       "id" : "1",
@@ -44,6 +44,12 @@
           "id" : "12",
           "sourceId" : "3",
           "tags" : "Relationship"
+        }, {
+          "description" : "Extract generated data",
+          "destinationId" : "9",
+          "id" : "13",
+          "sourceId" : "3",
+          "tags" : "Relationship"
         } ],
         "tags" : "Element,Container",
         "technology" : "FastHTML"
@@ -57,25 +63,25 @@
         "relationships" : [ {
           "description" : "Store necessary metadata",
           "destinationId" : "7",
-          "id" : "13",
+          "id" : "14",
           "sourceId" : "4",
           "tags" : "Relationship"
         }, {
           "description" : "Fill with logs",
           "destinationId" : "8",
-          "id" : "14",
+          "id" : "15",
           "sourceId" : "4",
           "tags" : "Relationship"
         }, {
           "description" : "Save train data and retrieve generated data",
           "destinationId" : "9",
-          "id" : "15",
+          "id" : "17",
           "sourceId" : "4",
           "tags" : "Relationship"
         }, {
           "description" : "Push task for train or inference",
           "destinationId" : "6",
-          "id" : "16",
+          "id" : "18",
           "sourceId" : "4",
           "tags" : "Relationship"
         } ],
@@ -89,9 +95,21 @@
           "structurizr.dsl.identifier" : "bp.ms"
         },
         "relationships" : [ {
+          "description" : "Fill with logs",
+          "destinationId" : "8",
+          "id" : "16",
+          "sourceId" : "5",
+          "tags" : "Relationship"
+        }, {
           "description" : "Retrieve train data, save model checkpoints and generated data",
           "destinationId" : "9",
-          "id" : "18",
+          "id" : "20",
+          "sourceId" : "5",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Update avatar statuses and save metadata",
+          "destinationId" : "7",
+          "id" : "21",
           "sourceId" : "5",
           "tags" : "Relationship"
         } ],
@@ -107,7 +125,7 @@
         "relationships" : [ {
           "description" : "Pooling task for inference or train",
           "destinationId" : "5",
-          "id" : "17",
+          "id" : "19",
           "sourceId" : "6",
           "tags" : "Relationship"
         } ],
@@ -153,12 +171,12 @@
   },
   "name" : "Bishop",
   "properties" : {
-    "structurizr.dsl" : "d29ya3NwYWNlICJCaXNob3AiICJUcmFpbiB5b3VyIG93biBhaS1hdmF0YXIiIHsKCiAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgbW9kZWwgewogICAgICAgIHUgPSBwZXJzb24gIlVzZXIiCiAgICAgICAgYnAgPSBzb2Z0d2FyZVN5c3RlbSAiQmlzaG9wIiB7CgogICAgICAgICAgICB1aSA9IGNvbnRhaW5lciAiV2ViIEFwcGxpY2F0aW9uInsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIkZhc3RIVE1MIgogICAgICAgICAgICB9CgogICAgICAgICAgICBicyA9IGNvbnRhaW5lciAiQmFja2VuZCBTZXJ2aWNlInsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIkZhc3RBcGkiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIG1zID0gY29udGFpbmVyICJNTCBTZXJ2aWNlInsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB1cmUiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIG1iID0gY29udGFpbmVyICJNZXNzYWdlQnJva2VyIiB7CiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJLYWZrYSIKICAgICAgICAgICAgICAgIHRhZ3MgIk1lc3NhZ2UgQnJva2VyIgogICAgICAgICAgICB9CgogICAgICAgICAgICBtYWluX2RiID0gY29udGFpbmVyICJSZWxhdGlvbmFsIERCIiB7CiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJQb3N0Z3JlcyIKICAgICAgICAgICAgICAgIHRhZ3MgIkRhdGFiYXNlIgogICAgICAgICAgICB9CgogICAgICAgICAgICBsb2dzX2RiID0gY29udGFpbmVyICJMb2cgREIiIHsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlJlZGlzIgogICAgICAgICAgICAgICAgdGFncyAiRGF0YWJhc2UiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGJsb2JfZGIgPSBjb250YWluZXIgIkJMT0IgU3RvcmFnZSIgewogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiTWluaW9TMyIKICAgICAgICAgICAgICAgIHRhZ3MgIkRhdGFiYXNlIgogICAgICAgICAgICB9CiAgICAgICAgICAgIAogICAgICAgIH0KCiAgICAgICAgdSAtPiBicC51aSAiVXNlcyBpbnRlcmZhY2UgdmlhIGJyb3dzZXIgZm9yIHdvcmtpbmcgd2l0aCBhaS1wb3dlcmVkIGF2YXRhcnMiCiAgICAgICAgYnAudWkgLT4gYnAuYnMgIkxldmVyYWdlIGxvZ2ljIHZpYSBBUEkiCiAgICAgICAgYnAuYnMgLT4gYnAubWFpbl9kYiAiU3RvcmUgbmVjZXNzYXJ5IG1ldGFkYXRhIgogICAgICAgIGJwLmJzIC0+IGJwLmxvZ3NfZGIgIkZpbGwgd2l0aCBsb2dzIgogICAgICAgIGJwLmJzIC0+IGJwLmJsb2JfZGIgIlNhdmUgdHJhaW4gZGF0YSBhbmQgcmV0cmlldmUgZ2VuZXJhdGVkIGRhdGEiCiAgICAgICAgYnAuYnMgLT4gYnAubWIgIlB1c2ggdGFzayBmb3IgdHJhaW4gb3IgaW5mZXJlbmNlIgogICAgICAgIGJwLm1iIC0+IGJwLm1zICJQb29saW5nIHRhc2sgZm9yIGluZmVyZW5jZSBvciB0cmFpbiIKICAgICAgICBicC5tcyAtPiBicC5ibG9iX2RiICJSZXRyaWV2ZSB0cmFpbiBkYXRhLCBzYXZlIG1vZGVsIGNoZWNrcG9pbnRzIGFuZCBnZW5lcmF0ZWQgZGF0YSIKICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgc3lzdGVtQ29udGV4dCBicCAiU3lzdGVtT3ZlcnZpZXciIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9sYXlvdXQgbHIKICAgICAgICB9CgogICAgICAgIGNvbnRhaW5lciBicCAiU3lzdGVtT3ZlcnZpZXdEZXRhaWxlZCIgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgZXhjbHVkZSB1CiAgICAgICAgICAgIGF1dG9sYXlvdXQgdGIKICAgICAgICB9CgogICAgICAgIHN0eWxlcyB7CiAgICAgICAgICAgIGVsZW1lbnQgIkVsZW1lbnQiIHsKICAgICAgICAgICAgICAgIGNvbG9yICNmZmZmZmYKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJQZXJzb24iIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIzliMTkxZgogICAgICAgICAgICAgICAgc2hhcGUgcGVyc29uCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICNiYTFlMjUKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJDb250YWluZXIiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgI2Q5MjMyYgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkRhdGFiYXNlIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICNkOTIzMmIKICAgICAgICAgICAgICAgIHNoYXBlIGN5bGluZGVyCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiTWVzc2FnZSBCcm9rZXIiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgI2Q5MjMyYgogICAgICAgICAgICAgICAgc2hhcGUgcGlwZSAKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KCiAgICBjb25maWd1cmF0aW9uIHsKICAgICAgICBzY29wZSBzb2Z0d2FyZXN5c3RlbQogICAgfQp9Cg=="
+    "structurizr.dsl" : "d29ya3NwYWNlICJCaXNob3AiICJUcmFpbiB5b3VyIG93biBhaS1hdmF0YXIiIHsKCiAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgbW9kZWwgewogICAgICAgIHUgPSBwZXJzb24gIlVzZXIiCiAgICAgICAgYnAgPSBzb2Z0d2FyZVN5c3RlbSAiQmlzaG9wIiB7CgogICAgICAgICAgICB1aSA9IGNvbnRhaW5lciAiV2ViIEFwcGxpY2F0aW9uInsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIkZhc3RIVE1MIgogICAgICAgICAgICB9CgogICAgICAgICAgICBicyA9IGNvbnRhaW5lciAiQmFja2VuZCBTZXJ2aWNlInsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIkZhc3RBcGkiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIG1zID0gY29udGFpbmVyICJNTCBTZXJ2aWNlInsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB1cmUiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIG1iID0gY29udGFpbmVyICJNZXNzYWdlQnJva2VyIiB7CiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJLYWZrYSIKICAgICAgICAgICAgICAgIHRhZ3MgIk1lc3NhZ2UgQnJva2VyIgogICAgICAgICAgICB9CgogICAgICAgICAgICBtYWluX2RiID0gY29udGFpbmVyICJSZWxhdGlvbmFsIERCIiB7CiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJQb3N0Z3JlcyIKICAgICAgICAgICAgICAgIHRhZ3MgIkRhdGFiYXNlIgogICAgICAgICAgICB9CgogICAgICAgICAgICBsb2dzX2RiID0gY29udGFpbmVyICJMb2cgREIiIHsKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlJlZGlzIgogICAgICAgICAgICAgICAgdGFncyAiRGF0YWJhc2UiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGJsb2JfZGIgPSBjb250YWluZXIgIkJMT0IgU3RvcmFnZSIgewogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiTWluaW9TMyIKICAgICAgICAgICAgICAgIHRhZ3MgIkRhdGFiYXNlIgogICAgICAgICAgICB9CiAgICAgICAgICAgIAogICAgICAgIH0KCiAgICAgICAgdSAtPiBicC51aSAiVXNlcyBpbnRlcmZhY2UgdmlhIGJyb3dzZXIgZm9yIHdvcmtpbmcgd2l0aCBhaS1wb3dlcmVkIGF2YXRhcnMiCiAgICAgICAgYnAudWkgLT4gYnAuYnMgIkxldmVyYWdlIGxvZ2ljIHZpYSBBUEkiCiAgICAgICAgYnAudWkgLT4gYnAuYmxvYl9kYiAiRXh0cmFjdCBnZW5lcmF0ZWQgZGF0YSIKICAgICAgICBicC5icyAtPiBicC5tYWluX2RiICJTdG9yZSBuZWNlc3NhcnkgbWV0YWRhdGEiCiAgICAgICAgYnAuYnMgLT4gYnAubG9nc19kYiAiRmlsbCB3aXRoIGxvZ3MiCiAgICAgICAgYnAubXMgLT4gYnAubG9nc19kYiAiRmlsbCB3aXRoIGxvZ3MiCiAgICAgICAgYnAuYnMgLT4gYnAuYmxvYl9kYiAiU2F2ZSB0cmFpbiBkYXRhIGFuZCByZXRyaWV2ZSBnZW5lcmF0ZWQgZGF0YSIKICAgICAgICBicC5icyAtPiBicC5tYiAiUHVzaCB0YXNrIGZvciB0cmFpbiBvciBpbmZlcmVuY2UiCiAgICAgICAgYnAubWIgLT4gYnAubXMgIlBvb2xpbmcgdGFzayBmb3IgaW5mZXJlbmNlIG9yIHRyYWluIgogICAgICAgIGJwLm1zIC0+IGJwLmJsb2JfZGIgIlJldHJpZXZlIHRyYWluIGRhdGEsIHNhdmUgbW9kZWwgY2hlY2twb2ludHMgYW5kIGdlbmVyYXRlZCBkYXRhIgogICAgICAgIGJwLm1zIC0+IGJwLm1haW5fZGIgIlVwZGF0ZSBhdmF0YXIgc3RhdHVzZXMgYW5kIHNhdmUgbWV0YWRhdGEiCiAgICB9CgogICAgdmlld3MgewogICAgICAgIHN5c3RlbUNvbnRleHQgYnAgIlN5c3RlbU92ZXJ2aWV3IiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBjb250YWluZXIgYnAgIlN5c3RlbU92ZXJ2aWV3RGV0YWlsZWQiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGV4Y2x1ZGUgdQogICAgICAgICAgICBhdXRvbGF5b3V0IHRiCiAgICAgICAgfQoKICAgICAgICBzdHlsZXMgewogICAgICAgICAgICBlbGVtZW50ICJFbGVtZW50IiB7CiAgICAgICAgICAgICAgICBjb2xvciAjZmZmZmZmCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiUGVyc29uIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICM5YjE5MWYKICAgICAgICAgICAgICAgIHNoYXBlIHBlcnNvbgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIlNvZnR3YXJlIFN5c3RlbSIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjYmExZTI1CiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiQ29udGFpbmVyIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICNkOTIzMmIKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJEYXRhYmFzZSIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjZDkyMzJiCiAgICAgICAgICAgICAgICBzaGFwZSBjeWxpbmRlcgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIk1lc3NhZ2UgQnJva2VyIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICNkOTIzMmIKICAgICAgICAgICAgICAgIHNoYXBlIHBpcGUgCiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICB9CgogICAgY29uZmlndXJhdGlvbiB7CiAgICAgICAgc2NvcGUgc29mdHdhcmVzeXN0ZW0KICAgIH0KfQo="
   },
   "views" : {
     "configuration" : {
       "branding" : { },
-      "lastSavedView" : "SystemOverview",
+      "lastSavedView" : "SystemOverviewDetailed",
       "metadataSymbols" : "SquareBrackets",
       "styles" : {
         "elements" : [ {
@@ -198,35 +216,35 @@
       },
       "dimensions" : {
         "height" : 3211,
-        "width" : 2520
+        "width" : 2390
       },
       "elements" : [ {
         "id" : "3",
-        "x" : 1345,
+        "x" : 1499,
         "y" : 185
       }, {
         "id" : "4",
-        "x" : 1345,
+        "x" : 1278,
         "y" : 785
       }, {
         "id" : "5",
-        "x" : 970,
+        "x" : 749,
         "y" : 1985
       }, {
         "id" : "6",
-        "x" : 220,
+        "x" : 749,
         "y" : 1385
       }, {
         "id" : "7",
         "x" : 970,
-        "y" : 1385
+        "y" : 2585
       }, {
         "id" : "8",
-        "x" : 1720,
-        "y" : 1385
+        "x" : 220,
+        "y" : 2585
       }, {
         "id" : "9",
-        "x" : 970,
+        "x" : 1720,
         "y" : 2585
       } ],
       "externalSoftwareSystemBoundariesVisible" : false,
@@ -235,17 +253,22 @@
       "relationships" : [ {
         "id" : "12"
       }, {
-        "id" : "13"
+        "id" : "13",
+        "vertices" : [ {
+          "x" : 1878,
+          "y" : 785
+        } ]
       }, {
-        "id" : "14"
+        "id" : "14",
+        "vertices" : [ {
+          "x" : 1349,
+          "y" : 2285
+        } ]
       }, {
         "id" : "15",
         "vertices" : [ {
-          "x" : 2320,
+          "x" : 599,
           "y" : 1385
-        }, {
-          "x" : 2320,
-          "y" : 1685
         } ]
       }, {
         "id" : "16"
@@ -253,12 +276,18 @@
         "id" : "17"
       }, {
         "id" : "18"
+      }, {
+        "id" : "19"
+      }, {
+        "id" : "20"
+      }, {
+        "id" : "21"
       } ],
       "softwareSystemId" : "2"
     } ],
     "systemContextViews" : [ {
       "automaticLayout" : {
-        "applied" : true,
+        "applied" : false,
         "edgeSeparation" : 0,
         "implementation" : "Graphviz",
         "nodeSeparation" : 300,
@@ -266,18 +295,14 @@
         "rankSeparation" : 300,
         "vertices" : false
       },
-      "dimensions" : {
-        "height" : 800,
-        "width" : 1550
-      },
       "elements" : [ {
         "id" : "1",
-        "x" : 200,
-        "y" : 165
+        "x" : 0,
+        "y" : 0
       }, {
         "id" : "2",
-        "x" : 900,
-        "y" : 215
+        "x" : 0,
+        "y" : 0
       } ],
       "enterpriseBoundaryVisible" : true,
       "key" : "SystemOverview",
