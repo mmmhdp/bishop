@@ -13,7 +13,6 @@ def send_update_message_state(
     producer: KafkaMessageProducer,
     message_id: uuid.UUID,
     generated_text: str,
-    dub_url: str,
 ):
     """
     Sends a 'generate_response' message for the avatar.
@@ -22,7 +21,6 @@ def send_update_message_state(
         "event": EVENTS["save_response"],
         "message_id": str(message_id),
         "generated_text": generated_text,
-        "dub_url": dub_url
     }
 
     logger.info(f"Sending generate_response message: {payload}")
