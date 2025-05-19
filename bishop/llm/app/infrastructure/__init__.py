@@ -1,1 +1,1 @@
-from redis_manager import redis_manager
+from app.infrastructure.redis_manager import redis_manager

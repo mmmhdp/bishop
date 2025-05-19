@@ -2,7 +2,7 @@ import os
 from multiprocessing import Process
 import signal
 from app.common.logging_service import logger
-from app.infrastructure import redis_manager
+from app.infrastructure.redis_manager import redis_manager
 
 
 def is_process_running() -> bool:
@@ -51,7 +51,8 @@ def terminate_process(pid: int) -> bool:
     """
     try:
         os.kill(pid, signal.SIGTERM)
-        logger.info(f"Successfully sent termination signal to process with PID {pid}")
+        logger.info(
+            f"Successfully sent termination signal to process with PID {pid}")
         return True
     except ProcessLookupError:
         logger.warning(f"Process with PID {pid} not found.")
