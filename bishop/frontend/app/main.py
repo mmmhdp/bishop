@@ -65,7 +65,7 @@ setup_toasts(app, duration=2000)
 def main_header():
     return Header(
         Div(
-            Span("BishopApp", cls="brand"),
+            Span("Bishop Ai Application", cls="brand"),
             Nav(
                 A("Login", href="/login"),
                 A("Signup", href="/signup"),
@@ -101,7 +101,9 @@ def project_intro():
 
 @rt("/")
 def home():
-    return Main(
+    return (
+    Title("BishopAi"),
+    Main(
         main_header(),
         Div(
             Titled("Home",
@@ -112,6 +114,7 @@ def home():
         ),
         main_footer(),
         cls="page-shell"
+    )
     )
 
 
@@ -151,9 +154,12 @@ def get():
         cls="login-box"
     )
 
-    return Div(
+    return (
+    Title("Bishop login"),
+    Div(
         content_box,
         cls="login-page"
+    )
     )
 
 
@@ -237,9 +243,12 @@ async def get():
         cls="signup-box"
     )
 
-    return Div(
-        content_box,
-        cls="signup-page"
+    return(
+        Title("Bishop signup"),
+        Div(
+            content_box,
+            cls="signup-page"
+        )
     )
 
 
@@ -379,7 +388,7 @@ async def get(sess):
     avatar_list_view = await avatars_list_box(sess)
 
     return Titled(
-        "User Page",
+        "Bishop Ai",
         user_view,
         avatar_list_view,
     )
