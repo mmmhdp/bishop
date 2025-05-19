@@ -1,6 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException, Form
 import uuid
 
+from app.common.logging_service import logger
 from app.common.api_deps import SessionDep, CurrentUser
 from app.train_material.TrainMaterial import TrainMaterialCreate, TrainMaterial
 from app.train_material import train_material_repository
@@ -20,10 +21,15 @@ async def upload_file(
     """
     Upload a new file for training and store it in S3 storage.
     """
+
+    logger.info(f"Uploading file for avatar {
+                avatar_id} by user {current_user.id}")
+
     try:
         file_url = await train_material_repository.upload_to_s3(
-            user_id=current_user.id, avatar_id=avatar_id, file=file)
+            user_id=current_user.id, avatar_id=avatar_id, file=file, type=type)
     except Exception as e:
+        logger.error(f"Error uploading file: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
     train_data = TrainMaterial(

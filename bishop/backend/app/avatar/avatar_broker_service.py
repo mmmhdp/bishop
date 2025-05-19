@@ -6,6 +6,7 @@ from app.train_material.TrainMaterial import TrainMaterial
 from app.common.logging_service import logger
 from app.common.config import settings
 from app.common.api_deps import SessionDep, ProducerDep
+from app.avatar import avatar_repository
 
 EVENTS = {
     "train_start": "train_start",
@@ -21,16 +22,13 @@ async def send_train_start_message(
     """
     Sends a 'train_start' message including all untrained materials for the avatar.
     """
-    statement = select(TrainMaterial).where(
-        TrainMaterial.avatar_id == avatar_id,
-        TrainMaterial.is_trained_on is False
+    untrained_materials = await avatar_repository.get_avaliable_train_materials(
+        session=session,
+        avatar_id=avatar_id
     )
 
-    result = await session.exec(statement)
-    untrained_materials = result.all()
-
-    logger.info(f"Found {len(untrained_materials)
-                         } untrained materials for avatar {avatar_id}")
+    logger.info(
+        f"Found {untrained_materials.count} untrained materials for avatar {avatar_id}")
 
     materials_data = [
         {
@@ -38,7 +36,7 @@ async def send_train_start_message(
             "type": material.type,
             "url": material.url
         }
-        for material in untrained_materials
+        for material in untrained_materials.data
     ]
 
     payload = {
@@ -48,7 +46,15 @@ async def send_train_start_message(
     }
 
     logger.info(f"Sending START training message for avatar {avatar_id}")
-    await producer.send(topic=settings.KAFKA_TOPIC_LLM_TRAIN, data=payload)
+    msg = await producer.send(topic=settings.KAFKA_TOPIC_LLM_TRAIN, data=payload)
+
+    logger.info(f"Message sent: {msg}")
+    invalidated_materials = await avatar_repository.invalidate_train_materials(
+        session=session,
+        avatar_id=avatar_id
+    )
+    logger.info(f"Invalidated {len(invalidated_materials)
+                               } materials for avatar {avatar_id}")
 
 
 async def send_train_stop_message(

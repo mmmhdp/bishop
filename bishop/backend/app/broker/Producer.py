@@ -31,6 +31,8 @@ class KafkaMessageProducer:
         except Exception as e:
             logger.exception(f"Failed to send message to topic '{topic}': {e}")
 
+        return message
+
     async def flush(self):
         if self.producer:
             await self.producer.flush()

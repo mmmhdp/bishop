@@ -11,6 +11,7 @@ from app.avatar.Avatar import (
     AvatarUpdate,
     AvatarsPublic
 )
+from app.train_material.TrainMaterial import TrainMaterialsPublic, TrainMaterial
 
 from app.common.api_deps import (
     CurrentUser,
@@ -136,3 +137,48 @@ async def get_training_status(
         return None
     logger.info(f"Status for avatar {avatar_id} is {status}")
     return status
+
+
+async def get_avaliable_train_materials(
+    session: SessionDep,
+    avatar_id: uuid.UUID,
+) -> TrainMaterialsPublic:
+    logger.info(f"Getting available training materials for avatar {avatar_id}")
+    statement = select(TrainMaterial).where(
+        TrainMaterial.avatar_id == avatar_id,
+        TrainMaterial.is_trained_on == False
+    )
+
+    result = await session.exec(statement)
+    untrained_materials = result.all()
+
+    materials_data = [
+        {
+            "id": str(material.id),
+            "type": material.type,
+            "url": material.url
+        }
+        for material in untrained_materials
+    ]
+    return TrainMaterialsPublic(data=materials_data, count=len(materials_data))
+
+
+async def invalidate_train_materials(
+    session: SessionDep,
+    avatar_id: uuid.UUID,
+):
+    materials = await get_avaliable_train_materials(
+        session=session,
+        avatar_id=avatar_id
+    )
+    logger.info(f"MATERIALS WILL BE INVALIDETED {materials}")
+
+    for material in materials.data:
+        db_material = await session.get(TrainMaterial, material.id)
+        if db_material is not None:
+            db_material.is_trained_on = True
+            await session.commit()
+            await session.refresh(db_material)
+
+    logger.info(f"Invalidated training materials for avatar {avatar_id}")
+    return materials

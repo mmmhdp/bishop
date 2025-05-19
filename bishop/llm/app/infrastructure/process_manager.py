@@ -2,7 +2,7 @@ import os
 from multiprocessing import Process
 import signal
 from app.common.logging_service import logger
-from app.infrastructure.redis_manager import redis_manager
+from app.infrastructure import redis_manager
 
 
 def is_process_running() -> bool:

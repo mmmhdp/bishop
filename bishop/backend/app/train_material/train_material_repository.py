@@ -5,6 +5,7 @@ from fastapi import UploadFile, HTTPException
 from minio.error import S3Error
 from starlette.concurrency import run_in_threadpool
 
+from app.common.logging_service import logger
 from app.common.config import settings
 from app.common.db import minio_client
 from app.train_material.TrainMaterial import TRAINIGN_MATERIAL_TYPE
@@ -46,7 +47,15 @@ async def upload_to_s3(file: UploadFile, user_id: uuid.UUID, avatar_id: uuid.UUI
     object_name = f"users/{user_id}/avatars/{
         avatar_id}/{file_type}/{file_id}.{file_ext}"
 
+    logger.info(f"Uploading file to MinIO: {object_name}")
+    logger.info(f"File type detected: {file_type}")
+    logger.info(f"File type requested: {type}")
+
     if type == TRAINIGN_MATERIAL_TYPE.voice_syntesis and file_type != "wav":
+        logger.error(
+            f"Invalid file type for voice synthesis: {
+                file_type}. Expected wav."
+        )
         raise HTTPException(
             status_code=400,
             detail="Invalid file type for voice synthesis. "

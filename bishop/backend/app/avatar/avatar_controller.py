@@ -16,6 +16,7 @@ from app.avatar.Avatar import (
     AvatarsPublic,
     Avatar
 )
+from app.train_material.TrainMaterial import TrainMaterialsPublic
 from app.avatar import avatar_broker_service
 from app.avatar import avatar_repository
 
@@ -131,6 +132,32 @@ async def delete_avatar(
         avatar_id=avatar_id
     )
     return SimpleMessage(message="Avatar deleted successfully")
+
+
+@router.get("/{avatar_id}/train/materials", response_model=TrainMaterialsPublic)
+async def get_current_train_materials(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    avatar_id: uuid.UUID,
+) -> TrainMaterialsPublic:
+    """
+    Get all training materials for a specific avatar, which is in training on pool now.
+    """
+    avatar = await session.get(Avatar, avatar_id)
+    if not avatar:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+    if not current_user.is_superuser and (avatar.user_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+
+    train_materials = await avatar_repository.get_avaliable_train_materials(
+        session=session,
+        avatar_id=avatar_id
+    )
+
+    print(f"train_materials: {train_materials}")
+
+    return train_materials
 
 
 @router.post("/{avatar_id}/train/start", response_model=SimpleMessage)

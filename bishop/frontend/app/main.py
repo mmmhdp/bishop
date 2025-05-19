@@ -473,39 +473,57 @@ async def delete_avatar(avatar_id: str, sess):
 
     return Redirect("/index")
 
+def AvatarStatusCard(avatar: dict):
+    status = avatar.get("status", "unknown")
+    name = avatar.get("name", "-")
+    return Card(
+        H3("Avatar Info"),
+        P(f"Status: {status}"),
+        P(f"Name: {name}"),
+        hx_swap="innerHTML",
+        cls="avatar-status-card"
+    )
 
+def AvatarMaterialsCard(materials: dict):
+    # materials: {"data": [...], "count": N}
+    data = materials.get("data", [])
+    count = materials.get("count", 0)
+    if not data:
+        return Card(
+            H3("Training Materials"),
+            P("No available training materials."),
+            cls="avatar-materials-card"
+        )
+    return Card(
+        H3(f"Training Materials in current training pool is equal to {count}"),
+        Ul(
+            *[
+                Li(
+                    f"Type of material: {mat['type'].capitalize()}: ",
+                    A("Download", href=mat["url"], target="_blank"),
+                )
+                for mat in data
+            ]
+        ),
+        cls="avatar-materials-card"
+    )
 @rt("/avatar/{avatar_id}/train_widget")
 async def avatar_train_widget(avatar_id: str, sess):
-    # async with httpx.AsyncClient(headers=get_auth_headers(sess)) as client:
-    #    try:
-    #        res = await client.post(f"{BACKEND_URL}/avatars/{avatar_id}/train/status")
-    #        model_state = res.json()
-    #    except Exception:
-    #        model_state = {
-    #            "status": "unknown",
-    #            "trained_on": "n/a",
-    #            "last_update": "n/a"
-    #        }
-    model_state = {
-        "status": "unknown",
-        "trained_on": "n/a",
-        "last_update": "n/a"
-    }
+
+    async with httpx.AsyncClient(headers=get_auth_headers(sess)) as cli:
+        func_url = f"/avatars/{avatar_id}"
+        url_to_call = BACKEND_URL + func_url
+        res = await cli.get(url_to_call)
+        avatar = res.json()
+
+        func_url = f"/avatars/{avatar_id}/train/materials"
+        url_to_call = BACKEND_URL + func_url
+        res = await cli.get(url_to_call)
+        materials = res.json()
 
     return Div(
-        # Div(
-        #    Card(
-        #        H3("Training Status"),
-        #        P(f"Model status: {model_state['status']}"),
-        #        P(f"Trained on: {model_state['trained_on']} file(s)"),
-        #        P(f"Last updated: {model_state['last_update']}"),
-        #        cls="training-card"
-        #    ),
-        #    id="train-status",
-        #    hx_post=f"/avatar/{avatar_id}/train_widget",
-        #    hx_swap="outerHTML"
-        # ),
-
+        AvatarStatusCard(avatar),
+        AvatarMaterialsCard(materials),
         H2("Train Avatar"),
         P("Upload files to train your avatar. We will extract text from the files and use it for training."),
         P("If you want to use this audio for voice synthesis, please select the appropriate option and use a .wav extension."),
@@ -530,12 +548,12 @@ async def avatar_train_widget(avatar_id: str, sess):
             Button("Start Training",
                    hx_post=f"/avatar/{avatar_id}/train/start",
                    hx_target="#avatar-train",
-                   hx_swap="outerHTML"
+                   hx_swap="innerHTML"
                    ),
             Button("Stop Training",
                    hx_post=f"/avatar/{avatar_id}/train/stop",
                    hx_target="#avatar-train",
-                   hx_swap="outerHTML"
+                   hx_swap="innerHTML"
                    ),
             Button("Back",
                    hx_get=f"/avatar/{avatar_id}",
