@@ -11,6 +11,7 @@ from app.train_material.TrainMaterial import TrainMaterial
 class AvatarBase (SQLModel):
     name: str = Field(sa_column=Column(Text, nullable=False))
     weight_url: Optional[str] = Field(default=None)
+    voice_url: Optional[str] = Field(default=None)
     status: str = Field(sa_column=Column(Text, nullable=False))
 
 
@@ -39,6 +40,7 @@ class Avatar (AvatarBase, table=True):
             "user.id", ondelete="CASCADE"), nullable=False)
     )
     status: str = Field(sa_column=Column(Text, nullable=False))
+    voice_url: Optional[str] = Field(default=None, sa_column=(Text))
     weight_url: Optional[str] = Field(default=None, sa_column=(Text))
     user: Optional["User"] = Relationship(back_populates="avatars")
     chats: list["Chat"] = Relationship(
@@ -52,6 +54,7 @@ class AvatarPublic(SQLModel):
     name: str
     status: str
     weight_url: Optional[str] = None
+    voice_url: Optional[str] = None
 
 
 class AvatarsPublic(SQLModel):

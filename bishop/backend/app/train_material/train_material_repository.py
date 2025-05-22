@@ -9,6 +9,9 @@ from app.common.logging_service import logger
 from app.common.config import settings
 from app.common.db import minio_client
 from app.train_material.TrainMaterial import TRAINIGN_MATERIAL_TYPE
+from app.train_material.TrainMaterial import TrainMaterial
+from app.avatar import avatar_repository
+from app.common.api_deps import SessionDep
 
 # Allowed extensions grouped by type
 # ALLOWED_EXTENSIONS = {
@@ -36,7 +39,13 @@ def detect_file_type(file_ext: str) -> str:
         status_code=400, detail=f"Unsupported file extension: .{file_ext}")
 
 
-async def upload_to_s3(file: UploadFile, user_id: uuid.UUID, avatar_id: uuid.UUID, type: str) -> str:
+async def upload_to_s3(
+    file: UploadFile,
+    user_id: uuid.UUID,
+    avatar_id: uuid.UUID,
+    type: str,
+    session: SessionDep
+) -> str:
     """
     Uploads file to MinIO with organized path and returns the full URL.
     Path format: users/{user_id}/avatars/{avatar_id}/{type}/{file_id}.{ext}
@@ -50,8 +59,9 @@ async def upload_to_s3(file: UploadFile, user_id: uuid.UUID, avatar_id: uuid.UUI
     logger.info(f"Uploading file to MinIO: {object_name}")
     logger.info(f"File type detected: {file_type}")
     logger.info(f"File type requested: {type}")
+    logger.info(f"File extension: {file_ext}")
 
-    if type == TRAINIGN_MATERIAL_TYPE.voice_syntesis and file_type != "wav":
+    if type == TRAINIGN_MATERIAL_TYPE.voice_syntesis and file_ext != "wav":
         logger.error(
             f"Invalid file type for voice synthesis: {
                 file_type}. Expected wav."
@@ -77,4 +87,32 @@ async def upload_to_s3(file: UploadFile, user_id: uuid.UUID, avatar_id: uuid.UUI
     except S3Error as exc:
         raise RuntimeError(f"Failed to upload to MinIO: {exc}")
 
+    if type == TRAINIGN_MATERIAL_TYPE.voice_syntesis and file_ext == "wav":
+        await avatar_repository.update_avatar_voice_url(
+            session=session,
+            avatar_id=avatar_id,
+            voice_url=f"{
+                settings.MINIO_URL}/{settings.MINIO_BUCKET}/{object_name}"
+        )
+
     return f"{settings.MINIO_URL}/{settings.MINIO_BUCKET}/{object_name}"
+
+
+async def create_train_material(
+    session,
+    avatar_id: uuid.UUID,
+    file_url: str,
+    type: str,
+):
+    train_data = TrainMaterial(
+        avatar_id=avatar_id,
+        url=file_url,
+        type=type,
+        is_trained_on=False,
+    )
+
+    session.add(train_data)
+    await session.commit()
+    await session.refresh(train_data)
+
+    return train_data

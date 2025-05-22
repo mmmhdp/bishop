@@ -1,145 +1,179 @@
+import io
+import os
+import torch
+import tempfile
+
+from app.common.db import minio_client
 from app.common.logging_service import logger
 from app.broker.producer_service import send_update_message_state
 from app.broker.Producer import KafkaMessageProducer
 from app.common.config import settings
+from TTS.api import TTS
 
-# import os
-import time
-# from transformers import AutoTokenizer, AutoModelForCausalLM
-# import torch
-# import soundfile as sf
-# from xcodec2.modeling_xcodec2 import XCodec2Model
 
+def download_minio_file_to_local(object_name: str, suffix: str = ".wav") -> str:
+    """
+    Downloads a file from MinIO and saves it as a temporary file locally.
+
+    Args:
+        object_name (str): The key of the object in the MinIO bucket.
+        suffix (str): The file extension to use for the temporary file.
+
+    Returns:
+        str: The path to the temporary local file.
+    """
+    logger.debug(f"Downloading object '{object_name}' from MinIO.")
+    try:
+        response = minio_client.get_object(
+            bucket_name=settings.MINIO_BUCKET,
+            object_name=object_name,
+        )
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
+            temp_file.write(response.read())
+            temp_path = temp_file.name
+
+        logger.info(f"Downloaded '{
+                    object_name}' to temporary file '{temp_path}'.")
+        return temp_path
+    except Exception as e:
+        logger.error(f"Failed to download object '{
+                     object_name}' from MinIO: {e}")
+        raise
+
+
+def delete_local_file(file_path: str) -> None:
+    """
+    Deletes a local file if it exists.
+
+    Args:
+        file_path (str): Path to the local file to delete.
+    """
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            logger.info(f"Deleted temporary file: {file_path}")
+        else:
+            logger.warning(f"Tried to delete non-existent file: {file_path}")
+    except Exception as e:
+        logger.error(f"Error deleting file '{file_path}': {e}")
+        raise
+
+
+class BytesIOWrapper:
+    def __init__(self, buf):
+        self.buffer = buf
+
+    def write(self, data):
+        logger.debug(f"Writing {len(data)} bytes to buffer.")
+        return self.buffer.write(data)
+
+    def flush(self):
+        logger.debug("Flushing buffer.")
+        return self.buffer.flush()
+
+
+os.environ["COQUI_TOS_AGREED"] = "1"
+# Log device information
+device = "cuda" if torch.cuda.is_available() else "cpu"
+logger.info(f"Selected device for TTS inference: {device}")
+
+# Initialize Kafka producer
 producer = KafkaMessageProducer(
     bootstrap_servers=settings.KAFKA_BROKER_URL,
 )
+logger.info("Kafka producer initialized.")
+
+# Load the TTS model once
+logger.info("Loading TTS model...")
+try:
+    tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+    logger.info("TTS model loaded successfully.")
+except Exception as e:
+    logger.error(f"Failed to load TTS model: {e}")
+    raise
+
+
+def save_dub_to_s3(dub_url, buffer):
+    buffer.seek(0)  # Ensure start of stream
+    buffer_size = buffer.getbuffer().nbytes
+    logger.debug(f"Uploading buffer to S3. Size: {
+                 buffer_size} bytes. URL: {dub_url}")
+
+    try:
+        minio_client.put_object(
+            bucket_name=settings.MINIO_BUCKET,
+            object_name=dub_url,
+            data=buffer,
+            length=buffer_size,
+            content_type='audio/wav'
+        )
+        logger.info(f"Audio file successfully uploaded to S3 at {dub_url}")
+    except Exception as e:
+        logger.error(f"Failed to upload audio to S3: {e}")
+        raise
+
+    return dub_url
 
 
 def process_inference_task(task_data):
+    logger.debug(f"Received task_data: {task_data}")
+
     input_text = task_data["text"]
     msg_id = task_data["message_id"]
-    dub_url = "app/sample.wav"
+    dub_url = task_data["storage_url"]
+    base_voice_url = task_data["base_voice_url"]
 
-    logger.info(f"Processing sound inference task with task_data: {task_data}")
+    # Download the base voice file from MinIO
 
-    send_update_message_state(
-        producer=producer,
-        message_id=msg_id,
-        generated_text=input_text,
-        dub_url=dub_url,
-    )
+    logger.info(f"Processing inference task for message_id: {msg_id}")
 
-    logger.info(f"Dub URL: {dub_url}")
-    logger.info(f"Generated text: {input_text}")
+    try:
+        # Prepare buffer and wrapper
+        dub_buffer = io.BytesIO()
+        wrapped_buffer = BytesIOWrapper(dub_buffer)
 
-    # Uncomment the following lines to run the inference pipeline
+        logger.debug("Starting TTS synthesis...")
+        if base_voice_url is None or base_voice_url == "":
+            logger.debug("No base voice URL provided, using default voice.")
+            tts.tts_to_file(
+                text=input_text,
+                language="ru",
+                pipe_out=wrapped_buffer,
+                speaker="Craig Gutsy"
+            )
+        else:
+            base_voice_path = download_minio_file_to_local(base_voice_url)
+            tts.tts_to_file(
+                text=input_text,
+                language="ru",
+                pipe_out=wrapped_buffer,
+                speaker_wav=base_voice_path,
+            )
+        logger.info("TTS synthesis complete.")
 
-    # 1) Load tokenizer & model
-    # checkpoint = "Malecc/Borscht-llasa-1b-tts"
-    # checkpoint = "HKUSTAudio/Llasa-1B-Multilingual"
+        # Save the generated dub to S3
+        save_dub_to_s3(dub_url, dub_buffer)
 
-    # logger.info(f"\n[1] Loading tokenizer & model from {checkpoint}")
-    # tokenizer = AutoTokenizer.from_pretrained(
-    #    checkpoint, local_files_only=False)
+        # Send the update
+        logger.debug("Sending update message to Kafka...")
+        send_update_message_state(
+            producer=producer,
+            message_id=msg_id,
+            generated_text=input_text,
+            dub_url=dub_url,
+        )
+        logger.info(
+            f"Message {msg_id} processed and update sent successfully.")
 
-    # tokenizer_path = 'HKUSTAudio/Llasa-1B-Multilingual'
+    except Exception as e:
+        logger.error(
+            f"Error while processing inference task for message_id {msg_id}: {e}")
+        raise
 
-    # model = AutoModelForCausalLM.from_pretrained(
-    #    tokenizer_path, local_files_only=False)
-    # model.eval().to("cuda")
-    # logger.info(f"    • Tokenizer vocab size: {len(tokenizer)}")
-    # logger.info(f"    • pad_token_id: {tokenizer.pad_token_id}")
-    # logger.info(f"    • Model class: {model.__class__.__name__}")
-
-    # 2) Load XCodec2 decoder
-    # xcodec2_name = "HKUSTAudio/xcodec2"
-    # logger.info(f"\n[2] Loading XCodec2 decoder from {xcodec2_name}")
-    # codec = XCodec2Model.from_pretrained(xcodec2_name, local_files_only=False)
-    # codec.eval().to("cuda")
-    # logger.info(f"    • XCodec2 class: {codec.__class__.__name__}")
-
-    # 3) Prepare input text
-    # input_text = "Маленькая страна Россия"
-    # input_text = 'Auch das unter Schirmherrschaft der Vereinten Nationen ausgehandelte Klimaschutzabkommen von Pariswollen die USA verlassen.'
-    # input_text = '言いなりにならなきゃいけないほど後ろめたい事をしたわけでしょ。'
-
-    # logger.info(f"\n[3] Input text: {input_text!r}")
-    # formatted = f"<|TEXT_UNDERSTANDING_START|>{
-    #    input_text}<|TEXT_UNDERSTANDING_END|>"
-    # chat = [
-    #    {"role": "user",    "content": "Convert the text to speech:" + formatted},
-    #    {"role": "assistant", "content": "<|SPEECH_GENERATION_START|>"}
-    # ]
-    # logger.info(f"    • Chat template: {chat}")
-
-    # 4) Tokenize
-    # t0 = time.time()
-    # input_ids = tokenizer.apply_chat_template(
-    #    chat,
-    #    tokenize=True,
-    #    return_tensors="pt",
-    #    continue_final_message=True
-    # ).to("cuda")
-    # t1 = time.time()
-    # logger.info(f"\n[4] Tokenized input in {t1-t0:.3f}s")
-    # logger.info(f"    • input_ids shape: {tuple(input_ids.shape)}")
-
-    # 5) Build attention mask & get end token
-    # pad_id = tokenizer.pad_token_id
-    # attention_mask = (input_ids != pad_id).long()
-    # logger.info(
-    #    f"\n[5] Attention mask built (non-pad tokens: {int(attention_mask.sum())})")
-    # speech_end_id = tokenizer.convert_tokens_to_ids(
-    #    "<|SPEECH_GENERATION_END|>")
-    # logger.info(f"    • SPEECH_GENERATION_END token id: {speech_end_id}")
-
-    # 6) Generate speech tokens
-    # gen_kwargs = {
-    #    "max_length": 2048,
-    #    "eos_token_id": speech_end_id,
-    #    "do_sample": True,
-    #    "top_p": 1.0,
-    #    "temperature": 0.8,
-    #    "pad_token_id": pad_id,
-    #    "attention_mask": attention_mask,
-    # }
-    # logger.info(f"\n[6] Running model.generate with args: {gen_kwargs}")
-    # t0 = time.time()
-    # outputs = model.generate(input_ids, **gen_kwargs)
-    # t1 = time.time()
-    # logger.info(f"    • Generation time: {t1-t0:.3f}s")
-    # logger.info(f"    • Output shape: {tuple(outputs.shape)}")
-
-    # 7) Extract speech token ids
-    # gen_ids = outputs[0][input_ids.shape[1]: -1]
-    # logger.info(f"\n[7] Extracted {gen_ids.shape[0]} generated token IDs")
-    # tok_strs = tokenizer.batch_decode(gen_ids, skip_special_tokens=True)
-    # logger.info(f"    • Sample decoded tokens: {tok_strs[:5]}")
-
-    # 8) Convert to integer codes
-    # speech_ids = []
-    # for tok in tok_strs:
-    #    if tok.startswith("<|s_") and tok.endswith("|>"):
-    #        speech_ids.append(int(tok[4:-2]))
-    #    else:
-    #        logger.info(f"    ⚠️ unexpected token: {tok}")
-    # logger.info(f"    • Converted to {len(speech_ids)
-    #                                  } integer codes (sample: {speech_ids[:5]})")
-
-    # speech_tensor = torch.tensor(speech_ids).cuda().unsqueeze(0).unsqueeze(0)
-    # logger.info(f"    • Speech tensor shape for decode: {
-    #    tuple(speech_tensor.shape)}")
-
-    # 9) Decode to waveform
-    # t0 = time.time()
-    # wav_tensor = codec.decode_code(speech_tensor)
-    # t1 = time.time()
-    # logger.info(f"\n[9] Decoded waveform in {t1-t0:.3f}s")
-    # logger.info(f"    • Waveform tensor shape: {
-    #    tuple(wav_tensor.shape)}, dtype: {wav_tensor.dtype}")
-
-    # 10) Write to WAV
-    # wav_path = "gen.wav"
-    # sf.write(wav_path, wav_tensor[0, 0, :].cpu().numpy(), 16000)
-    # size_mb = os.path.getsize(wav_path) / 1e6
-    # logger.info(f"\n[10] Wrote output WAV '{wav_path}' ({size_mb:.2f} MB)")
+    finally:
+        dub_buffer.close()
+        if base_voice_url:
+            logger.debug(f"Deleting local file: {base_voice_path}")
+            delete_local_file(base_voice_path)
+        logger.debug("Closed dub buffer.")

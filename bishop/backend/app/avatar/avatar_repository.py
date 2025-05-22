@@ -171,7 +171,6 @@ async def invalidate_train_materials(
         session=session,
         avatar_id=avatar_id
     )
-    logger.info(f"MATERIALS WILL BE INVALIDETED {materials}")
 
     for material in materials.data:
         db_material = await session.get(TrainMaterial, material.id)
@@ -182,3 +181,21 @@ async def invalidate_train_materials(
 
     logger.info(f"Invalidated training materials for avatar {avatar_id}")
     return materials
+
+
+async def update_avatar_voice_url(
+    session: SessionDep,
+    avatar_id: uuid.UUID,
+    voice_url: str
+) -> Optional[Avatar]:
+    logger.info(f"Updating voice_url for avatar {avatar_id} to {voice_url}")
+
+    avatar = await read_avatar_by_id(session, avatar_id)
+    if not avatar:
+        logger.error(f"Avatar {avatar_id} not found")
+        return None
+
+    avatar.voice_url = voice_url
+    await session.commit()
+    await session.refresh(avatar)
+    return avatar

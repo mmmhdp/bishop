@@ -32,7 +32,9 @@ async def send_generate_response_message(
 
 async def generate_dub_for_message(
     producer: ProducerDep,
+    storage_url: str,
     message_id: uuid.UUID,
+    base_voice_url: str = None,
     gen_message: str = None
 ):
     """
@@ -40,6 +42,8 @@ async def generate_dub_for_message(
     """
     payload = {
         "event": EVENTS["sound_inference"],
+        "storage_url": storage_url,
+        "base_voice_url": base_voice_url,
         "message_id": str(message_id),
         "text": gen_message,
     }

@@ -27,19 +27,20 @@ async def upload_file(
 
     try:
         file_url = await train_material_repository.upload_to_s3(
-            user_id=current_user.id, avatar_id=avatar_id, file=file, type=type)
+            user_id=current_user.id,
+            avatar_id=avatar_id,
+            file=file, type=type,
+            session=session
+        )
     except Exception as e:
         logger.error(f"Error uploading file: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-    train_data = TrainMaterial(
+    train_data = await train_material_repository.create_train_material(
+        session=session,
         avatar_id=avatar_id,
-        url=file_url,
-        type=type,
-        is_trained_on=False,
+        file_url=file_url,
+        type=type
     )
 
-    session.add(train_data)
-    await session.commit()
-    await session.refresh(train_data)
     return train_data

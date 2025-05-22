@@ -53,7 +53,7 @@ async def send_train_start_message(
         session=session,
         avatar_id=avatar_id
     )
-    logger.info(f"Invalidated {len(invalidated_materials)
+    logger.info(f"Invalidated {invalidated_materials.count
                                } materials for avatar {avatar_id}")
 
 
