@@ -259,8 +259,7 @@ def process_llasa_task(task_data: dict) -> None:
 
 
 def dispatch_task(task_data: dict) -> None:
-    # mode = task_data.get('mode', 'tts')
-    mode = None
+    mode = task_data.get('mode', 'tts')
     msg_id = task_data.get('message_id', 'unknown')
     logger.info(f"[dispatcher] Received task {msg_id} with mode '{mode}'")
     if mode == 'llasa':
