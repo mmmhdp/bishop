@@ -10,7 +10,7 @@ from app.common.db import async_engine
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-max_tries = 60 * 5  # 5 minutes
+max_tries = 60 * 5
 wait_seconds = 1
 
 
@@ -23,7 +23,6 @@ wait_seconds = 1
 async def init(db_engine: AsyncEngine) -> None:
     try:
         async with AsyncSession(db_engine) as session:
-            # Try to create session to check if DB is awake
             await session.exec(select(1))
     except Exception as e:
         logger.error(e)

@@ -1,0 +1,39 @@
+# --- Локальное окружение ---
+.venv
+
+# --- Переменные окружения ---
+.env
+
+# --- IDE и редакторы ---
+# PyCharm
+.idea/
+*.iml
+# Vim
+*.swp
+*.swo
+*~
+
+# --- Кеши Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Лог-файлы и отладочные данные ---
+*.log
+logs/
+debug.log
+
+# --- Тесты и отчеты ---
+.coverage
+htmlcov/
+.pytest_cache/
+
+# --- Данные и модели ---
+app/ml/models/*
+!app/ml/models/.gitkeep
+app/ml/data/interim/*
+!app/ml/data/interim/.gitkeep
+app/ml/data/raw/*
+!app/ml/data/raw/.gitkeep
+app/ml/data/processed/*
+!app/ml/data/processed/.gitkeep

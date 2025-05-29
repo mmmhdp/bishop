@@ -50,10 +50,68 @@ services:
     ports:
       - "5432:5432"
 
-  adminer:
+  kafka:
+    ports:
+      - "29092:9092"
+
+  zookeeper:
+    ports:
+      - "22181:2181"
+
+  log-db:
+    ports:
+      - "6379:6379"
+
+  s3:
+    ports:
+      - "9000:9000" # actual bucket port
+      - "9001:9001" # console port
+
+  llm:
     restart: "no"
     ports:
-      - "8080:8080"
+      - "11000:11000"
+    build:
+      context: ./llm
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - app.main
+    develop:
+      watch:
+        - path: ./llm
+          action: sync
+          target: /app
+          ignore:
+            - ./llm/.venv
+            - .venv
+        - path: ./llm/pyproject.toml
+          action: rebuild
+
+  sound:
+    restart: "no"
+    ports:
+      - "11001:11001"
+    build:
+      context: ./sound
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - app.main
+    develop:
+      watch:
+        - path: ./sound
+          action: sync
+          target: /app
+          ignore:
+            - ./sound/.venv
+            - .venv
+        - path: ./sound/pyproject.toml
+          action: rebuild
 
   backend:
     restart: "no"

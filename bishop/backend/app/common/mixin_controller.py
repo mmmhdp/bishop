@@ -2,10 +2,9 @@ from fastapi import APIRouter, Depends
 from pydantic.networks import EmailStr
 
 from app.common.api_deps import get_current_active_superuser
-
 from app.common.models.SimpleMessage import SimpleMessage
-
 from app.email.email_service import generate_test_email, send_email
+from app.common.api_deps import ProducerDep
 
 router = APIRouter()
 
@@ -29,5 +28,16 @@ async def test_email(email_to: EmailStr) -> SimpleMessage:
 
 
 @router.get("/health-check/")
-async def health_check() -> bool:
+async def health_check(producer: ProducerDep) -> bool:
+    # await producer.send(
+    #    topic="health-check-llm", data={
+    #        "event": "health-check",
+    #        "status": "ok"
+    #    })
+    # await producer.send(
+    #    topic="health-check-sound", data={
+    #        "status": "ok",
+    #        "event": "health-check",
+    #    })
+    # await producer.flush()
     return True

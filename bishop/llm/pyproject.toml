@@ -1,0 +1,25 @@
+[project]
+name = "llm"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "confluent-kafka>=2.9.0",
+    "pydantic-settings>=2.8.1",
+    "pydantic>=2.11.1",
+    "openai-whisper>=20240930",
+    "minio>=7.2.15",
+    "kaggle>=1.7.4.2",
+    "tqdm>=4.67.1",
+    "redis>=5.2.1",
+    "transformers[torch]>=4.51.3",
+    "datasets>=3.5.1",
+    "torch>=2.6.0",
+    "moviepy>=2.1.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]

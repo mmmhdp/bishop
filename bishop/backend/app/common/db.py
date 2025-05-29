@@ -1,33 +1,30 @@
-from sqlmodel import select
+from sqlmodel import select, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.user import user_repository
-
 from app.common.config import settings
-
 from app.user.User import User, UserCreate
+import app.common.models_init
+
+
+from minio import Minio
+
+
+minio_client = Minio(
+    endpoint=settings.MINIO_ENDPOINT,
+    access_key=settings.MINIO_ACCESS_KEY,
+    secret_key=settings.MINIO_SECRET_KEY,
+    secure=settings.MINIO_USE_SSL,
+)
 
 async_engine = create_async_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
-# make sure all SQLModel models are imported (app.models) before initializing DB
-# otherwise, SQLModel might fail to initialize relationships properly
-# for more details: https://github.com/fastapi/full-stack-fastapi-template/issues/28
-
-
 async def init_db(session: AsyncSession) -> None:
-    # Tables should be created with Alembic migrations
-    # But if you don't want to use migrations, create
-    # the tables un-commenting the next lines
-
-    import app.common.models_init  # noqa
-    from sqlmodel import SQLModel
 
     async with async_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
-
-    # end of the comment
 
     search_result = await session.exec(
         select(User).where(User.email == settings.FIRST_SUPERUSER)
@@ -40,3 +37,6 @@ async def init_db(session: AsyncSession) -> None:
             is_superuser=True,
         )
         user = await user_repository.create_user(session=session, user_create=user_in)
+
+    if not minio_client.bucket_exists(settings.MINIO_BUCKET):
+        minio_client.make_bucket(settings.MINIO_BUCKET)

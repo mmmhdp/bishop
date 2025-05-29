@@ -1,0 +1,1 @@
+from app.infrastructure.redis_manager import redis_manager

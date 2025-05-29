@@ -1,0 +1,1 @@
+from app.media_converter.Transcribator import transcribator

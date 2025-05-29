@@ -1,0 +1,1 @@
+from .S3Storage import s3_storage

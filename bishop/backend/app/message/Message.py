@@ -1,44 +1,58 @@
 import uuid
 
-from sqlmodel import Field, SQLModel, Column, Relationship
+from sqlmodel import Field, SQLModel, Column, Relationship, ForeignKey
 from sqlalchemy.types import Text
 
 from typing import TYPE_CHECKING, Optional
+
+
+class MessageBase (SQLModel):
+    text: Optional[str] = Field(default=None, sa_column=Column(Text))
+    is_generated: bool = Field(default=False)
+    dub_url: Optional[str] = Field(default=None, sa_column=Column(Text))
+    text_status: Optional[str] = Field(default=None, sa_column=Column(Text))
+    dub_status: Optional[str] = Field(default=None, sa_column=Column(Text))
+
+
+class MessageCreate(SQLModel):
+    text: Optional[str] = Field(default=None, sa_column=Column(Text))
+    is_generated: Optional[bool] = Field(default=False)
+    dub_url: Optional[str] = Field(default=None, sa_column=Column(Text))
+
+
+class MessageUpdate (SQLModel):
+    text: str = Field(default=None, sa_column=Column(Text))
+    text_status: Optional[str] = Field(default=None, sa_column=Column(Text))
+    dub_status: Optional[str] = Field(default=None, sa_column=Column(Text))
 
 
 if TYPE_CHECKING:
     from app.chat.Chat import Chat
 
 
-class MessageBase (SQLModel):
-    id: uuid.UUID
-    text: str | None = Field(default=None, sa_column=Column(Text))
-    is_generated: bool = Field(default=False)
-    dub_url: str | None = Field(default=None, sa_column=Column(Text))
-
-
-class MessageCreate (MessageBase):
-    chat_id: uuid.UUID = Field(
-        foreign_key="chat.id", nullable=False, ondelete="CASCADE"
-    )
-
-
-class MessageUpdate (MessageBase):
-    text: str | None = Field(default=None, sa_column=Column(Text))
-
-
-class Message (MessageCreate, table=True):
+class Message(MessageBase, table=True):
     __tablename__ = "message"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    is_generated: bool = Field(default=False, nullable=False)
-    text: str | None = Field(default=None)
-    dub_url: str | None = Field(default=None)
 
-    chat: Optional["Chat"] = Relationship(back_populates="messages")
+    chat: "Chat" = Relationship(back_populates="messages")
+    chat_id: uuid.UUID = Field(
+        sa_column=Column(ForeignKey(
+            "chat.id", ondelete="CASCADE"), nullable=False)
+    )
+    avatar_id: uuid.UUID = Field(
+        sa_column=Column(ForeignKey(
+            "avatar.id", ondelete="CASCADE"), nullable=False)
+    )
+    user_id: uuid.UUID = Field(
+        sa_column=Column(ForeignKey(
+            "user.id", ondelete="CASCADE"), nullable=False)
+    )
 
 
 class MessagePublic (MessageBase):
     id: uuid.UUID
+    chat_id: uuid.UUID
+    avatar_id: uuid.UUID
 
 
 class MessagesPublic (SQLModel):

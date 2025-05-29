@@ -1,9 +1,7 @@
+from httpx import AsyncClient
+from app.common.config import settings
 import random
 import string
-
-from fastapi.testclient import TestClient
-
-from app.common.config import settings
 
 
 def random_lower_string() -> str:
@@ -14,17 +12,15 @@ def random_email() -> str:
     return f"{random_lower_string()}@{random_lower_string()}.com"
 
 
-def get_superuser_token_headers(client: TestClient) -> dict[str, str]:
+async def get_superuser_token_headers_async(client: AsyncClient) -> dict[str, str]:
     login_data = {
         "username": settings.FIRST_SUPERUSER,
         "password": settings.FIRST_SUPERUSER_PASSWORD,
     }
-    r = client.post(
-        f"{settings.API_V1_STR}/login/access-token", data=login_data)
-    print(r.status_code, r.json())
-    print("Username:", settings.FIRST_SUPERUSER)
-    print("Password:", settings.FIRST_SUPERUSER_PASSWORD)
+    r = await client.post(
+        f"{settings.API_V1_STR}/login/access-token",
+        data=login_data,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
     tokens = r.json()
-    a_token = tokens["access_token"]
-    headers = {"Authorization": f"Bearer {a_token}"}
-    return headers
+    return {"Authorization": f"Bearer {tokens['access_token']}"}

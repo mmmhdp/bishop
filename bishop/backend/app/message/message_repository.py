@@ -1,54 +1,103 @@
-from app.message.Message import Message, MessageCreate
-from app.user.User import User
-from app.chat.Chat import Chat
-from app.avatar.Avatar import Avatar
 import uuid
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import func, select
+
+from sqlmodel import select
+from app.message.Message import Message, MessagesPublic, MessageCreate
+
+from app.common.api_deps import SessionDep, CurrentUser
 
 
-async def create_chat_message( # Used only in tests, mb need to be removed
-        *,
-        session: AsyncSession,
-        item_in: MessageCreate) -> Message:
+async def get_message_by_id(
+    *,
+    session: SessionDep,
+    message_id: uuid.UUID
+) -> Message | None:
+    """
+    Retrieve a message by its ID.
+    """
+    statement = select(Message).where(Message.id == message_id)
+    result = await session.exec(statement)
+    return result.one_or_none()
 
-    db_chat_message = Message.model_validate(item_in)
-    session.add(db_chat_message)
-    await session.commit()
-    await session.refresh(db_chat_message)
-    return db_chat_message
 
-async def get_user_messages(
-        *,
-        session: AsyncSession,
-        user: User,
-        skip: int = 0,
-        limit: int = 100) -> list[Message]:
-    
+async def get_messages_for_chat(
+    *,
+    session: SessionDep,
+    chat_id: uuid.UUID,
+    skip: int = 0,
+    limit: int = 100
+) -> MessagesPublic:
     statement = (
         select(Message)
-        .join(Chat, Message.chat_id == Chat.id)
-        .join(Avatar, Chat.avatar_id == Avatar.id)
-        .join(User, Avatar.user_id == User.id)
-        .where(User.id == user.id)
+        .where(Message.chat_id == chat_id)
         .offset(skip)
         .limit(limit)
     )
-    messages_result = await session.exec(statement)
-    messages = messages_result.all()
-
-    return messages
-
-async def get_user_by_message_id(*, session: AsyncSession, message_id: uuid.UUID) -> User:
-    statement = (
-        select(User)
-        .join(Avatar, User.id == Avatar.user_id)
-        .join(Chat, Avatar.id == Chat.avatar_id)
-        .join(Message, Chat.id == Message.chat_id)
-        .where(Message.id == message_id)
-    )
-    
     result = await session.exec(statement)
-    user = result.first()
-    
-    return user
+    return result.all()
+
+
+async def create_message(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    avatar_id: uuid.UUID,
+    chat_id: uuid.UUID,
+    item_in: MessageCreate,
+) -> Message:
+
+    message = Message(
+        **item_in.model_dump(),
+        id=uuid.uuid4(),
+        user_id=current_user.id,
+        avatar_id=avatar_id,
+        chat_id=chat_id,
+        text_status="ready",
+    )
+
+    rsp_msg_box = Message(
+        id=uuid.uuid4(),
+        user_id=current_user.id,
+        avatar_id=avatar_id,
+        chat_id=chat_id,
+        text=None,
+        text_status="pending",
+        is_generated=True,
+        dub_url=None,
+        dub_status="pending",
+    )
+
+    session.add(message)
+    session.add(rsp_msg_box)
+
+    await session.commit()
+    await session.refresh(message)
+    await session.refresh(rsp_msg_box)
+
+    return message, rsp_msg_box
+
+
+async def update_message_response(
+    *,
+    session: SessionDep,
+    message_id: uuid.UUID,
+    text: str | None = None,
+    text_status: str | None = None,
+    dub_url: str | None = None,
+    dub_status: str | None = None,
+) -> Message | None:
+    statement = select(Message).where(Message.id == message_id)
+    result = await session.exec(statement)
+    message = result.one_or_none()
+
+    if not message:
+        return None
+
+    message.text = text if text else message.text
+    message.text_status = text_status if text_status else message.text_status
+    message.dub_url = dub_url if dub_url else message.dub_url
+    message.dub_status = dub_status if dub_status else message.dub_status
+
+    session.add(message)
+    await session.commit()
+    await session.refresh(message)
+    return message

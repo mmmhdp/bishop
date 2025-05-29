@@ -2,21 +2,24 @@ from collections.abc import AsyncGenerator
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from redis import asyncio as AsyncRedis
 from app.security import security_service
 
 from app.common.config import settings
 
-from app.common.db import async_engine
+from app.common.db import (
+    async_engine, minio_client, Minio
+)
 
 from app.security.models.Token import TokenPayload
-
 from app.user.User import User
+from app.broker.Producer import KafkaMessageProducer
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -60,3 +63,17 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
             status_code=403, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+async def get_producer(request: Request) -> KafkaMessageProducer:
+    return request.app.state.producer
+
+
+ProducerDep = Annotated[KafkaMessageProducer, Depends(get_producer)]
+
+
+async def get_s3_client() -> Minio:
+    return minio_client
+
+
+S3Dep = Annotated[Minio, Depends(get_s3_client)]

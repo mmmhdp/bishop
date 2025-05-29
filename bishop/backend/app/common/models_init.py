@@ -30,10 +30,10 @@ from app.avatar.Avatar import (
     AvatarUpdate,
     Avatar
 )
-from app.train_data.TrainData import (
-    TrainDataBase,
-    TrainDataCreate,
-    TrainData
+from app.train_material.TrainMaterial import (
+    TrainMaterialBase,
+    TrainMaterialCreate,
+    TrainMaterial
 )
 
 SimpleMessage.model_rebuild()
