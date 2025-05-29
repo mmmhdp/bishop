@@ -6,7 +6,7 @@
   "documentation" : { },
   "id" : 1,
   "lastModifiedAgent" : "structurizr-ui",
-  "lastModifiedDate" : "2025-05-16T13:35:46Z",
+  "lastModifiedDate" : "2025-05-29T07:17:58Z",
   "model" : {
     "people" : [ {
       "id" : "1",
@@ -176,7 +176,7 @@
   "views" : {
     "configuration" : {
       "branding" : { },
-      "lastSavedView" : "SystemOverviewDetailed",
+      "lastSavedView" : "SystemOverview",
       "metadataSymbols" : "SquareBrackets",
       "styles" : {
         "elements" : [ {
@@ -287,7 +287,7 @@
     } ],
     "systemContextViews" : [ {
       "automaticLayout" : {
-        "applied" : false,
+        "applied" : true,
         "edgeSeparation" : 0,
         "implementation" : "Graphviz",
         "nodeSeparation" : 300,
@@ -295,14 +295,18 @@
         "rankSeparation" : 300,
         "vertices" : false
       },
+      "dimensions" : {
+        "height" : 800,
+        "width" : 1550
+      },
       "elements" : [ {
         "id" : "1",
-        "x" : 0,
-        "y" : 0
+        "x" : 199,
+        "y" : 165
       }, {
         "id" : "2",
-        "x" : 0,
-        "y" : 0
+        "x" : 899,
+        "y" : 215
       } ],
       "enterpriseBoundaryVisible" : true,
       "key" : "SystemOverview",

@@ -77,13 +77,3 @@ async def get_s3_client() -> Minio:
 
 
 S3Dep = Annotated[Minio, Depends(get_s3_client)]
-
-
-async def get_redis_client() -> AsyncRedis.Redis:
-    client = AsyncRedis.from_url(settings.REDIS_URL, decode_responses=True)
-    try:
-        yield client
-    finally:
-        await client.aclose()
-
-CacheDep = Annotated[AsyncRedis.Redis, Depends(get_redis_client)]

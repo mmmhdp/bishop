@@ -1,0 +1,134 @@
+\documentclass[
+    % master,
+    colurls  
+]{mthesis}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Параметры класса документа
+
+%---------
+% тип ВКР
+%---------
+% По умолчанию тип ВКР установлен как "bachelor", но может быть заменен 
+% на "master" для магистерской ВКР.
+
+%-------------
+% гиперссылки
+%-------------
+% blackurls - ссылки на литературу, таблицы, рисунки, формулы и т.п.
+%             не выделяются цветом (используется для ч/б печати).
+% colurls   - цветные ссылки (для распространения рукописи в эл. виде).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Здесь следует размещать допольнительные пакеты и команды. Следующие 
+% пакеты уже загружены в стилевой файл: geometry, amssymb, mathtools, 
+% ifthen, cmap, textcomp, babel, upgreek, indentfirst, xcolor, 
+% tabularray, icomma, ulem, soulutf8, tikz, hyperref, graphicx, 
+% caption, subcaption, pdfpages, aliascnt, totalcount, totcount, 
+% totpages, placeins, enumitem, biblatex, fancyvrb, listings
+
+% например, для создания данного примера ВКР потребовались 
+% следующие пакеты и команды:
+\usepackage{graphicx}  
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+
+\lstdefinestyle{jsonstyle}{
+    backgroundcolor=\color{white},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single
+}
+% пакет для вёрстки сложных матриц
+\usepackage{nicematrix}
+
+% пакет для вставки примеров изображений
+\usepackage{duckuments}
+
+% пакет для оформления блоков цитирования
+\usepackage{csquotes}
+
+% доп. библиотеки tikz
+\usetikzlibrary{shapes.geometric, shapes.misc, arrows, positioning}
+
+% стили tikz для рисования блок-схемы
+\tikzset{
+  line/.style = {thick},
+  startstop/.style = {rounded rectangle, line, minimum width=3cm, 
+    minimum height=1cm, text centered, draw=black, fill=white},
+  io/.style = {trapezium, line, trapezium stretches=true, trapezium left angle=70, 
+    trapezium right angle=110, minimum width=3cm, minimum height=1cm, 
+    text centered, draw=black, fill=white},
+  process/.style = {rectangle, line, minimum width=3cm, minimum height=1cm, 
+    text centered, text width=3cm, draw=black, fill=white},
+  decision/.style = {diamond, line, minimum width=3cm, minimum height=1cm, 
+    text centered, draw=black, fill=white, aspect=2},
+  arrow/.style = {line,->,>=stealth},
+}
+
+
+
+\input{title.cfg}
+
+\begin{document}
+
+% Реферат
+\include{abstract}
+
+% Содержание
+\ifdefmacro{\microtypesetup}{\microtypesetup{protrusion=false}}{}
+\tableofcontents*
+\ifdefmacro{\microtypesetup}{\microtypesetup{protrusion=true}}{}
+
+% Список сокращений и условных обозначений
+\include{acronyms}
+
+% Введение
+\include{introduction}
+
+% Разделы ВКР
+\include{02_структурный и системный анализ исследуемого объекта}
+\include{03_обзор научно-технических источников}
+\include{04_постановка задачи}
+\include{05_сущность решения задачи}
+\include{06_построение модели решения задачи}
+\include{07_программная реализация}
+\include{08_результаты}
+
+% Заключение
+\include{conclusion}
+
+% Список литературы
+\clearpage
+%\hypersetup{ urlcolor=black }               % Ссылки делаем чёрными
+%\providecommand*{\BibDash}{}                % В стилях ugost2008 отключаем использование тире как разделителя
+\urlstyle{rm}                               % ссылки URL обычным шрифтом
+\ifdefmacro{\microtypesetup}{\microtypesetup{protrusion=false}}{}
+\insertbibliofull
+\ifdefmacro{\microtypesetup}{\microtypesetup{protrusion=true}}{}
+\urlstyle{tt}                               % возвращаем установки шрифта ссылок URL
+%\hypersetup{ urlcolor={urlcolor} }          % Восстанавливаем цвет ссылок
+
+% Настройка приложений
+\ThesisAppendix
+
+% Приложения
+\include{appendix}
+
+\end{document}

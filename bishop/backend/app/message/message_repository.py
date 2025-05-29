@@ -3,7 +3,7 @@ import uuid
 from sqlmodel import select
 from app.message.Message import Message, MessagesPublic, MessageCreate
 
-from app.common.api_deps import SessionDep, CacheDep, CurrentUser
+from app.common.api_deps import SessionDep, CurrentUser
 
 
 async def get_message_by_id(
@@ -34,14 +34,6 @@ async def get_messages_for_chat(
     )
     result = await session.exec(statement)
     return result.all()
-
-
-async def get_response_id_by_msg_id(
-    cache_db: CacheDep,
-    message_id: uuid.UUID
-) -> uuid.UUID:
-    response_id = await cache_db.get(str(message_id))
-    return uuid.UUID(response_id) if response_id else None
 
 
 async def create_message(

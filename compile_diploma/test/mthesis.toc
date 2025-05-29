@@ -1,0 +1,91 @@
+\changetocdepth {2}
+\babel@toc {russian}{}\relax 
+\contentsline {chapter}{ПЕРЕЧЕНЬ СОКРАЩЕНИЙ И ОБОЗНАЧЕНИЙ}{10}{chapter*.4}%
+\contentsline {chapter}{ВВЕДЕНИЕ}{11}{chapter*.5}%
+\contentsline {chapter}{\chapternumberline {1}Структурный и системный анализ исследуемого объекта}{13}{chapter.1}%
+\contentsline {chapter}{\chapternumberline {2}Обзор научно-технических источников информации}{16}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Концептуальные и архитектурные решения}{16}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Общий архитектурный паттерн. Микросервисный и монолитный подходы}{16}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Паттерн взаимодействия микросервисов. Хореография и оркестрация}{17}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Модель взаимодействия компонентов. Асинхронность, параллельность и конкурентность}{18}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Модель хранения данных}{19}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Паттерн клиентской архитектуры. Модели MPA и SPA}{20}{subsection.2.1.5}%
+\contentsline {section}{\numberline {2.2}Программные средства и технологии реализации}{21}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Выбор языка программирования}{21}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Веб интерфейс}{22}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Серверная часть. Оркестратор}{23}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Серверная часть. Модуль работы с языковой и звуковой моделью}{24}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Серверная часть. Технология распознавания речи}{27}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}Серверная часть. Брокер сообщений}{28}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}Инфраструктура и развертывание}{29}{subsection.2.2.7}%
+\contentsline {subsection}{\numberline {2.2.8}Итог по архитектуре}{29}{subsection.2.2.8}%
+\contentsline {chapter}{\chapternumberline {3}Постановка задачи}{32}{chapter.3}%
+\contentsline {chapter}{\chapternumberline {4}Сущность решения задачи}{33}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Компоненты решения}{33}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Веб интерфейс}{33}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Бекэнд}{33}{subsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.1.3}Реляционная база данных}{33}{subsection.4.1.3}%
+\contentsline {subsection}{\numberline {4.1.4}ML сервис}{34}{subsection.4.1.4}%
+\contentsline {subsection}{\numberline {4.1.5}Брокер сообщений}{34}{subsection.4.1.5}%
+\contentsline {subsection}{\numberline {4.1.6}S3 хранилище}{34}{subsection.4.1.6}%
+\contentsline {section}{\numberline {4.2}Алгоритм взаимодействия}{34}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Процедуры регистрации и аутентификации пользователя}{34}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Процедура обучения}{35}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Процедура взаимодействия с аватаром}{37}{subsection.4.2.3}%
+\contentsline {chapter}{\chapternumberline {5}Построение модели решения задачи}{41}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Цели и ограничения}{41}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Модуль генерации текста}{42}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Данные}{42}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Выбор базовой модели}{43}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Метрики}{44}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}Токенизация}{44}{subsection.5.2.4}%
+\contentsline {subsection}{\numberline {5.2.5}Обучение}{44}{subsection.5.2.5}%
+\contentsline {subsection}{\numberline {5.2.6}Генерация текста}{45}{subsection.5.2.6}%
+\contentsline {section}{\numberline {5.3}Модуль генерации звука}{45}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Выбор базовой модели}{46}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Подготовка данных}{47}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Гиперпараметры дообучения модели}{47}{subsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.3.4}Процесс дообучения и отслеживание параметров}{48}{subsection.5.3.4}%
+\contentsline {subsection}{\numberline {5.3.5}Оценка качества генерации и используемые метрики}{50}{subsection.5.3.5}%
+\contentsline {chapter}{\chapternumberline {6}Программная реализация}{51}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Веб-интерфейс}{51}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}Гостевая страница}{51}{subsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.1.2}Идентификация, аутентификация и авторизация}{51}{subsection.6.1.2}%
+\contentsline {subsubsection}{Регистрация}{52}{section*.22}%
+\contentsline {subsubsection}{Техническая реализация и безопасность данных}{52}{section*.23}%
+\contentsline {subsection}{\numberline {6.1.3}Основная страница приложения}{53}{subsection.6.1.3}%
+\contentsline {subsection}{\numberline {6.1.4}Страница работы с аватаром}{55}{subsection.6.1.4}%
+\contentsline {subsection}{\numberline {6.1.5}Интерфейс общения с аватаром}{56}{subsection.6.1.5}%
+\contentsline {subsection}{\numberline {6.1.6}Интерфейс обучения аватара}{58}{subsection.6.1.6}%
+\contentsline {section}{\numberline {6.2}Backend-сервис}{60}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Взаимодействие с веб-интерфейсом}{61}{subsection.6.2.1}%
+\contentsline {subsubsection}{Группировка HTTP методов и соответствующих модулей}{61}{section*.24}%
+\contentsline {subsubsection}{Пример описания обработчика из модуля users}{63}{section*.25}%
+\contentsline {subsection}{\numberline {6.2.2}Взаимодействие с базой данных}{64}{subsection.6.2.2}%
+\contentsline {subsubsection}{Основные сведения о реализации}{64}{section*.26}%
+\contentsline {subsubsection}{Пример реализации}{65}{section*.27}%
+\contentsline {subsubsection}{Структура модулей для работы с разными таблицами в БД}{66}{section*.28}%
+\contentsline {subsection}{\numberline {6.2.3}Взаимодействие с ML-сервисом}{67}{subsection.6.2.3}%
+\contentsline {subsubsection}{Формирование и передача запросов к ML-сервису}{68}{section*.30}%
+\contentsline {subsubsection}{Получение и обработка ответов от ML-сервиса}{70}{section*.31}%
+\contentsline {subsection}{\numberline {6.2.4}Взаимодействие с S3-хранилищем}{72}{subsection.6.2.4}%
+\contentsline {subsubsection}{Загрузка данных пользователя}{72}{section*.32}%
+\contentsline {section}{\numberline {6.3}Сервис генерации звука}{74}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}Обработка событий брокера сообщений и инициализация очереди генерации}{74}{subsection.6.3.1}%
+\contentsline {subsection}{\numberline {6.3.2}Этапы синтеза речи}{75}{subsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.3.3}Формат обратной связи через брокер сообщений}{77}{subsection.6.3.3}%
+\contentsline {section}{\numberline {6.4}Сервис генерации текста}{78}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Пайплайн обучения модели}{78}{subsection.6.4.1}%
+\contentsline {subsubsection}{Этап подготовки данных}{79}{section*.33}%
+\contentsline {subsubsection}{Этап запуска обучения}{83}{section*.34}%
+\contentsline {subsubsection}{Этап сохранения результатов}{88}{section*.35}%
+\contentsline {chapter}{\chapternumberline {7}Результаты}{89}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Инициализация системы}{89}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Регистрация и создание аватара}{89}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Загрузка обучающих материалов}{89}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Обучение аватара}{89}{section.7.4}%
+\contentsline {section}{\numberline {7.5}Диалог и синтез речи}{90}{section.7.5}%
+\contentsline {chapter}{ЗАКЛЮЧЕНИЕ}{91}{chapter*.36}%
+\contentsline {chapter}{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}{92}{chapter*.37}%
+\contentsline {appendix}{\chapternumberline {\CYRA }Интерфейс}{95}{appendix.A}%
+\contentsline {appendix}{\chapternumberline {\CYRB }Отчёты о работе сервиса}{99}{appendix.B}%

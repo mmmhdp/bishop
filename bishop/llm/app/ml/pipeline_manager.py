@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from app.broker.Producer import KafkaMessageProducer
-from app.broker.producer_service import send_update_message_state
 from app.common.config import settings
 from app.common.logging_service import logger
 # from app.kaggle_api import kaggle_manager
@@ -67,18 +66,3 @@ def execute_task_pipeline(task_data):
 
         logger.info("Executing inference pipelines")
         process_inference_task(task_data)
-
-        # message_id = task_data["message_id"]
-        # text = task_data["text"]
-
-        # generated_text = "dummy_text"
-
-        # logger.info(f"Processing inference task with task_data: {task_data}")
-
-        # generating logic call
-
-        # send_update_message_state(
-        #    producer=producer,
-        #    message_id=message_id,
-        #    generated_text=generated_text,
-        # )
