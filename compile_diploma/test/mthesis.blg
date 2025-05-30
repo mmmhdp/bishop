@@ -1,15 +1,15 @@
 [0] Config.pm:307> INFO - This is Biber 2.19
 [0] Config.pm:310> INFO - Logfile is 'mthesis.blg'
-[95] biber:340> INFO - === Thu May 29, 2025, 10:43:07
-[118] Biber.pm:419> INFO - Reading 'mthesis.bcf'
-[233] Biber.pm:979> INFO - Found 26 citekeys in bib section 0
-[252] Biber.pm:4419> INFO - Processing section 0
-[265] Biber.pm:4610> INFO - Looking for bibtex file 'bibliography.bib' for section 0
-[268] bibtex.pm:1713> INFO - LaTeX decoding ...
-[306] bibtex.pm:1519> INFO - Found BibTeX data source 'bibliography.bib'
-[871] UCollate.pm:68> INFO - Overriding locale 'ru-RU' defaults 'variable = shifted' with 'variable = non-ignorable'
-[871] UCollate.pm:68> INFO - Overriding locale 'ru-RU' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[871] Biber.pm:4239> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'ru-RU'
-[871] Biber.pm:4245> INFO - No sort tailoring available for locale 'ru-RU'
-[909] bbl.pm:660> INFO - Writing 'mthesis.bbl' with encoding 'UTF-8'
-[932] bbl.pm:763> INFO - Output to mthesis.bbl
+[77] biber:340> INFO - === Thu May 29, 2025, 15:07:54
+[93] Biber.pm:419> INFO - Reading 'mthesis.bcf'
+[213] Biber.pm:979> INFO - Found 26 citekeys in bib section 0
+[239] Biber.pm:4419> INFO - Processing section 0
+[256] Biber.pm:4610> INFO - Looking for bibtex file 'bibliography.bib' for section 0
+[261] bibtex.pm:1713> INFO - LaTeX decoding ...
+[310] bibtex.pm:1519> INFO - Found BibTeX data source 'bibliography.bib'
+[925] UCollate.pm:68> INFO - Overriding locale 'ru-RU' defaults 'variable = shifted' with 'variable = non-ignorable'
+[925] UCollate.pm:68> INFO - Overriding locale 'ru-RU' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[925] Biber.pm:4239> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'ru-RU'
+[925] Biber.pm:4245> INFO - No sort tailoring available for locale 'ru-RU'
+[954] bbl.pm:660> INFO - Writing 'mthesis.bbl' with encoding 'UTF-8'
+[976] bbl.pm:763> INFO - Output to mthesis.bbl

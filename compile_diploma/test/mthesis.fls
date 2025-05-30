@@ -1,4 +1,4 @@
-PWD /home/mal/compile_diploma/test
+PWD /home/mal/dev/bishop/compile_diploma/test
 INPUT /etc/texmf/web2c/texmf.cnf
 INPUT /usr/share/texmf/web2c/texmf.cnf
 INPUT /usr/share/texlive/texmf-dist/web2c/texmf.cnf

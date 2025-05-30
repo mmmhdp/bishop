@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.5.8)  29 MAY 2025 10:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.5.8)  29 MAY 2025 15:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -3270,67 +3270,67 @@ Underfull \hbox (badness 4765) in paragraph at lines 332--339
 
 [23.23] [24.24] [25.25] [26.26]
 LaTeX Font Info:    Trying to load font information for TS1+Tempora-TLF on inpu
-t line 455.
+t line 456.
 
 (/usr/share/texlive/texmf-dist/tex/latex/tempora/TS1Tempora-TLF.fd
 File: TS1Tempora-TLF.fd 2016/02/02 (autoinst) Font definitions for TS1/Tempora-
 TLF.
 )
 LaTeX Font Info:    Font shape `TS1/Tempora-TLF/m/n' will be
-(Font)              scaled to size 14.4pt on input line 455.
+(Font)              scaled to size 14.4pt on input line 456.
  [27.27{/usr/share/texlive/texmf-dist/fonts/enc/dvips/tempora/tmp_ac5xuc.enc}] 
 [28.28]
-Overfull \hbox (2.08173pt too wide) in paragraph at lines 578--578
+Overfull \hbox (2.08173pt too wide) in paragraph at lines 579--579
 []|\T2A/Tempora-TLF/b/n/14.4 Альтернативы| 
  []
 
 
-Overfull \hbox (3.04654pt too wide) in paragraph at lines 578--578
+Overfull \hbox (3.04654pt too wide) in paragraph at lines 579--579
 []|\T2A/Tempora-TLF/m/n/14.4 Архитектурный
  []
 
 
-Overfull \hbox (3.04904pt too wide) in paragraph at lines 578--578
+Overfull \hbox (3.04904pt too wide) in paragraph at lines 579--579
 []|\T2A/Tempora-TLF/m/n/14.4 Микросервисы| 
  []
 
 
-Overfull \hbox (5.29294pt too wide) in paragraph at lines 578--578
+Overfull \hbox (5.29294pt too wide) in paragraph at lines 579--579
 []|\T2A/Tempora-TLF/m/n/14.4 Взаимодействие
  []
 
 
-Overfull \hbox (5.68422pt too wide) in paragraph at lines 578--578
+Overfull \hbox (5.68422pt too wide) in paragraph at lines 579--579
 []|\T2A/Tempora-TLF/m/n/14.4 Асинхронность| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 578--578
+Underfull \hbox (badness 10000) in paragraph at lines 579--579
 []|\T2A/Tempora-TLF/m/n/14.4 Синхронность
  []
 
 
-Underfull \hbox (badness 7362) in paragraph at lines 578--578
+Underfull \hbox (badness 7362) in paragraph at lines 579--579
 \T2A/Tempora-TLF/m/n/14.4 или мно-го-по-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 578--578
+Underfull \hbox (badness 10000) in paragraph at lines 579--579
 []|\T2A/Tempora-TLF/m/n/14.4 Только SQL.
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 578--578
+Underfull \hbox (badness 10000) in paragraph at lines 579--579
 \T2A/Tempora-TLF/m/n/14.4 Ло-каль-ная
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 578--578
+Underfull \hbox (badness 10000) in paragraph at lines 579--579
 \T2A/Tempora-TLF/m/n/14.4 фай-ло-вая си-
  []
 
 
-Underfull \hbox (badness 3386) in paragraph at lines 578--578
+Underfull \hbox (badness 3386) in paragraph at lines 579--579
 []|\T2A/Tempora-TLF/m/n/14.4 Непрерывный UX, ча-стые
  []
 
@@ -3338,122 +3338,122 @@ Underfull \hbox (badness 3386) in paragraph at lines 578--578
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-Overfull \hbox (2.08173pt too wide) in paragraph at lines 629--629
+Overfull \hbox (2.08173pt too wide) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/b/n/14.4 Альтернативы| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Язык про-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 \T2A/Tempora-TLF/m/n/14.4 грам-ми-ро-ва-
  []
 
 
-Underfull \hbox (badness 2573) in paragraph at lines 629--629
+Underfull \hbox (badness 2573) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Широкая эко-си-сте-ма как
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Оркестратор
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Django REST
  []
 
 
-Underfull \hbox (badness 2922) in paragraph at lines 629--629
+Underfull \hbox (badness 2922) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Полноценный async. Ми-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 \T2A/Tempora-TLF/m/n/14.4 ни-маль-ные тре-бо-ва-ния
  []
 
 
-Underfull \hbox (badness 4132) in paragraph at lines 629--629
+Underfull \hbox (badness 4132) in paragraph at lines 630--630
 \T2A/Tempora-TLF/m/n/14.4 к струк-ту-ре про-ек-та от
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 HuggingFace
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Google Cloud
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 \T2A/Tempora-TLF/m/n/14.4 TTS, Azure
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 \T2A/Tempora-TLF/m/n/14.4 Cognitive,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 RabbitMQ;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Веб-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 FastHTML +
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 React, Vue,
  []
 
 
-Overfull \hbox (4.71365pt too wide) in paragraph at lines 629--629
+Overfull \hbox (4.71365pt too wide) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Развјртывание| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Docker
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 \T2A/Tempora-TLF/m/n/14.4 + Docker
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Виртуальные
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 []|\T2A/Tempora-TLF/m/n/14.4 Унификация ин-тер-фей-са
  []
 
 
-Underfull \hbox (badness 2302) in paragraph at lines 629--629
+Underfull \hbox (badness 2302) in paragraph at lines 630--630
 \T2A/Tempora-TLF/m/n/14.4 упро-щен-ные усло-вия для
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 629--629
+Underfull \hbox (badness 10000) in paragraph at lines 630--630
 \T2A/Tempora-TLF/m/n/14.4 по-тен-ци-аль-но-го де-п-лоя
  []
 
@@ -3554,7 +3554,7 @@ Underfull \hbox (badness 2119) in paragraph at lines 97--99
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 LaTeX Font Info:    Trying to load font information for T2A+cmtt on input line 
-162.
+163.
 (/usr/share/texlive/texmf-dist/tex/latex/cyrillic/t2acmtt.fd
 File: t2acmtt.fd 2001/08/11 v1.0a Computer Modern Cyrillic font definitions
 )
@@ -3879,7 +3879,7 @@ texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive
 ype1/public/cm-super/sfit1200.pfb></usr/share/texmf/fonts/type1/public/cm-super
 /sftt1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt1200.pfb></usr/
 share/texmf/fonts/type1/public/cm-super/sftt1440.pfb>
-Output written on mthesis.pdf (104 pages, 4981802 bytes).
+Output written on mthesis.pdf (104 pages, 4981777 bytes).
 PDF statistics:
  2176 PDF objects out of 2487 (max. 8388607)
  1962 compressed objects within 20 object streams
